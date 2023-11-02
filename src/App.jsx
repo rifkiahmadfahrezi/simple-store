@@ -1,8 +1,10 @@
 import React, {Component} from 'react'
-
+import Navbar from './component/navbar/Navbar'
 
 export default class App extends Component{
   render(){
-    return(<h1 className="bg-red-700 text-white">Hello world</h1>)
+    return(
+      <Navbar />
+    )
   }
 }
