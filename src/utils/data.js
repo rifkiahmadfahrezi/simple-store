@@ -1,34 +1,19 @@
 class Product {
 	// product data
-	getAllProducts(){
-		const data = []
-		fetch('https://dummyjson.com/products')
-		.then(res => res.json())
-		.then(res => {
-			data.push(...res)
-		})
-		.catch(err => console.error(err));
+	async getAllProducts(){
+		const response = await fetch('https://dummyjson.com/products')
+		const data = await response.json()
 		return data
 	}
 
 	getProduct(id = 1 ){
-		const data = []
-		fetch(`https://dummyjson.com/products/${id}`)
-		.then(res => res.json())
-		.then(res => {
-			data.push(...res)
-		})
-		.catch(err => console.error(err));
+		const response = fetch(`https://dummyjson.com/products/${id}`)
+		const data = response.json()
 		return data
 	}
 	searchProduct(keyword){
-		const data = []
-		fetch(`https://dummyjson.com/products/search?q=${keyword}`)
-		.then(res => res.json())
-		.then(res => {
-			data.push(...res)
-		})
-		.catch(err => console.error(err));
+		const response = fetch(`https://dummyjson.com/products/search?q=${keyword}`)
+		const data = response.json()
 		return data
 	}
 
