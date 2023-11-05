@@ -14,8 +14,14 @@ export default function Navbar(){
 				<div className="flex items-center gap-[15px]">
 					<Searchbox/>
 					<div className="flex items-center gap-[10px]">
-						<Link to="/login" style="hover:text-indigo-800 hover:font-semibold capitalize">login</Link>
-						<Link to="/register" style="py-1 px-2 rounded-md bg-indigo-900 text-slate-50 hover:font-normal hover:bg-indigo-700 hover:text-white capitalize">register</Link>
+						<Link 
+							to="/login" 
+							style="border rounded-md py-1 px-2 border-indigo-900 hover:text-indigo-800 transition duration-300 hover:shadow-lg hover:text-white hover:bg-indigo-700 capitalize"
+							>login</Link>
+						<Link 
+							to="/register" 
+							style="py-1 px-2 rounded-md bg-indigo-900 text-slate-50  hover:bg-indigo-700 transition duration-300 hover:shadow-lg hover:text-white capitalize "
+							>register</Link>
 					</div>
 				</div>
 			</div>
