@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react'
+import {useLoaderData} from 'react-router-dom'
 import Navbar from '../component/navbar'
 import Card from '../component/card'
 import product from '../utils/data.js'
@@ -59,12 +60,12 @@ export default function Home(){
           {productsData.products?.length > 0 ?
             productsData.products.map(item => {
               return (
-                <Card key={item.id} style={`cursor-pointer hover:scale-[1.01] shadow-lg transition duration-300`} discount={item.discountPercentage}>
+                <Card key={item.id} to={`/product/${item.id}`} style={`cursor-pointer hover:scale-[1.01] shadow-lg transition duration-300`} discount={item.discountPercentage}>
                   <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
                   <Card.body>
                       <p className="font-semibold mb-1 text-xl text-indigo-900">${item.price}</p>
                       <h4>{item.title}</h4>
-                      <h5 className="font-semibold ">{item.brand}</h5>
+                      <h5 className="font-semibold"><i className='text-indigo-900 bx bxs-check-circle'></i>{item.brand}</h5>
                       <span className="mt-1"><i className='bx bxs-star text-yellow-400 text-xl'></i> {item.rating}</span>
                   </Card.body>
                 </Card> 
@@ -79,3 +80,8 @@ export default function Home(){
     )
   }
 
+
+export async function loader(){
+  const products = await product.getAllProducts()
+  return {products}
+}
