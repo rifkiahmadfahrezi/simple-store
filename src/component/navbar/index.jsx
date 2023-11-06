@@ -7,7 +7,7 @@ export default function Navbar(){
 		<nav className="bg-white w-full py-5">
 			<div className="container mx-auto flex items-center justify-between">
 				<Link to="/" style="flex items-center">
-					<img src="favicon/android-chrome-192x192.png" alt="logo" width="30"/>
+					<img src="/favicon/android-chrome-192x192.png" alt="logo" width="30"/>
 					<span className="font-montserrat ml-1 font-bold">imple Store</span>
 				</Link>
 
