@@ -16,5 +16,5 @@ export default function ErrorPage(){
 		      <a href="/" className="hover:underline text-indigo-900 text-lg font-semibold capitalize">back to home</a>
 	      </div>
 	    </div>
-	  );
+	  )
 }

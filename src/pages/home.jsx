@@ -26,8 +26,6 @@ export default function Home(){
       // get all products
       getProducts(product.getAllProducts())
       .catch(error => console.error(error)) 
-     
-      // console.log(productsData)
     },[])
 
     async function getProductByCategory(category){
@@ -60,7 +58,7 @@ export default function Home(){
           {productsData.products?.length > 0 ?
             productsData.products.map(item => {
               return (
-                <Card key={item.id} to={`/product/${item.id}`} style={`cursor-pointer hover:scale-[1.01] shadow-lg transition duration-300`} discount={item.discountPercentage}>
+                <Card key={item.id} to={`/product/${item.id}`} style={`cursor-pointer hover:shadow-2xl shadow-md transition duration-300`} discount={item.discountPercentage}>
                   <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
                   <Card.body>
                       <p className="font-semibold mb-1 text-xl text-indigo-900">${item.price}</p>
@@ -68,6 +66,11 @@ export default function Home(){
                       <h5 className="font-semibold"><i className='text-indigo-900 bx bxs-check-circle'></i>{item.brand}</h5>
                       <span className="mt-1"><i className='bx bxs-star text-yellow-400 text-xl'></i> {item.rating}</span>
                   </Card.body>
+                  <Card.footer onClick={e => e.preventDefault()}>
+                      <button className="py-2 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700">
+                       <i className="bx bx-cart"></i> Add to cart
+                      </button>
+                  </Card.footer>
                 </Card> 
               )
             }) : <Skeleton number="8" style="h-[300px] rounded-md"/>
