@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import index from './index.css'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import Home from './pages/Home'
 import Product, {loader} from './pages/Product'
+import LoginPage from './pages/LoginPage'
 import ErrorPage from './pages/ErrorPage'
 
 
@@ -17,17 +17,12 @@ const router = createBrowserRouter([
   },
   {
      path: '/login',
-     element: <h1>Login</h1>
-  },
-  {
-     path: '/register',
-     element: <h1>Register</h1>
+     element: <LoginPage/>
   },
   {
      path: '/product/:productId',
      element: <Product/>,
      loader: loader,
-     errorElement: <ErrorPage/>,
   }
 
 ])
