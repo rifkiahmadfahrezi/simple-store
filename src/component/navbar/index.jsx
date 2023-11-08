@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Link from './../elements/link/Link'
 import Searchbox from './searchbox/Searchbox'
 
 
 export default function Navbar(){
+
+	// json.parse for change string to boolean
+	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')))
 
 	function search(e){
 		e.preventDefault()
@@ -11,6 +14,12 @@ export default function Navbar(){
 
 	function inputChangeHandler(e){
 		const value = e.target.value
+	}
+
+	function doLogout(e){
+		e.preventDefault()
+		setIsLogin(false)
+		sessionStorage.setItem('login', false)
 	}
 
 	return(
@@ -24,10 +33,17 @@ export default function Navbar(){
 				<div className="flex items-center gap-[15px]">
 					<Searchbox submitHandler={search} changeHandler={inputChangeHandler}/>
 					<div className="flex items-center gap-[10px]">
-						<Link 
+						{!isLogin ? 
+							<Link 
 							to="/login" 
 							style="border rounded-md py-1 px-2 border-indigo-900 hover:text-white transition duration-300 hover:shadow-md hover:bg-indigo-900 capitalize"
 							>login</Link>
+							: 
+							<Link 
+							onClickHandler={doLogout}
+							style="border rounded-md py-1 px-2 border-indigo-900 hover:text-white transition duration-300 hover:shadow-md hover:bg-indigo-900 capitalize"
+							>logout</Link>
+						}
 					</div>
 				</div>
 			</div>
