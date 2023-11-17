@@ -43,7 +43,7 @@ export default function Home(){
       <>
         <Navbar />
 
-        <div className="container mx-auto">
+        <div className="container mx-auto mt-5 container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold font-montserrat capitalize text-indigo-900"
             >our products</h2>
@@ -54,7 +54,7 @@ export default function Home(){
           </div>
         </div>
 
-        <div className="grid container mx-auto mt-8 grid-cols-3 gap-4">
+        <div className="grid container mx-auto w-[90%] sm:w-full mt-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {productsData.products?.length > 0 ?
             productsData.products.map(item => {
               return (

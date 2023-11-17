@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Link from './../elements/link/Link'
 import Searchbox from './searchbox/Searchbox'
+import Dropdown from '../Dropdown'
 
 
 export default function Navbar(){
@@ -23,9 +24,9 @@ export default function Navbar(){
 	}
 
 	return(
-		<nav className="bg-white w-full py-5">
-			<div className="container mx-auto flex items-center justify-between">
-				<Link to="/" style="flex items-center">
+		<nav className="bg-white shadow-md w-full py-5">
+			<div className="container mx-auto w-[90%] sm:w-full flex flex-col sm:flex-row items-center justify-between">
+				<Link to="/" style="flex items-center mb-5 sm:mb-0">
 					<img src="/favicon/android-chrome-192x192.png" alt="logo" width="30"/>
 					<span className="font-montserrat ml-1 font-bold">imple Store</span>
 				</Link>

@@ -58,7 +58,7 @@ export default function LoginPage(){
 
 	return(
 	<>
-		<div className="container mx-auto min-h-screen w-screen flex justify-center items-center">
+		<div className="container mx-auto w-[90%] sm:w-full min-h-[80vh] md:min-h-screen w-screen flex justify-center items-center">
 		      <Card style="border border-2-indigo-900 min-w-[400px]">
 		      	<Card.body >
 		      		<form onSubmit={(e) => submitFormHandler(e)} >
