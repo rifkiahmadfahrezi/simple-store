@@ -27,6 +27,9 @@ export default function LoginPage(){
 
 	function submitFormHandler(e){
 		e.preventDefault()
+		// reset form if login failed
+		console.log(e.target)
+		if (error.isError) e.target.reset()  
 		doLogin(username.current, password.current)
 	}
 
