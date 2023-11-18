@@ -16,7 +16,6 @@ export default function Product(){
 		const clickedImg = e.target.getAttribute('src')
 		setThumbnail(clickedImg)
 	}
-
 	return(
 		<>
 			<Navbar/>

@@ -4,14 +4,10 @@ import Searchbox from './searchbox/Searchbox'
 import Dropdown from '../Dropdown'
 
 
-export default function Navbar(){
+export default function Navbar({onSubmitHandler}){
 
 	// json.parse for change string to boolean
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')))
-
-	function search(e){
-		e.preventDefault()
-	}
 
 	function inputChangeHandler(e){
 		const value = e.target.value
@@ -32,7 +28,7 @@ export default function Navbar(){
 				</Link>
 
 				<div className="flex items-center gap-[15px]">
-					<Searchbox submitHandler={search} changeHandler={inputChangeHandler}/>
+					<Searchbox onSubmitHandler={onSubmitHandler}/>
 					<div className="flex items-center gap-[10px]">
 						{!isLogin ? 
 							<Link 
