@@ -43,6 +43,10 @@ export default function LoginPage(){
 		if (filtered.length <= 0) return setError({isError: true, message: 'Your login information is incorrect, please try again'})
 		// if login information correct set login session
 		sessionStorage.setItem("login", true)
+		sessionStorage.setItem("userId", filtered[0].id)
+
+
+		// sessionStorage.setItem("userid", )
 		setError({isError: false, message: null})
 		// redirect to homePage
 		window.location.href = "/"
