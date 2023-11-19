@@ -1,17 +1,27 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from './../elements/link/Link'
 import Searchbox from './searchbox/Searchbox'
 import Dropdown from '../Dropdown'
+import {getUser} from '../../utils/user.js'
 
 
 export default function Navbar({onSubmitHandler}){
 
 	// json.parse for change string to boolean
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')))
+	const [ userInfo, setUserInfo ] = useState([])
+	const userId = sessionStorage.getItem('userId')
+
 
 	function inputChangeHandler(e){
 		const value = e.target.value
 	}
+
+	useEffect(()=> {
+		setUserInfo(getUser(userId))
+	}, [])
+
+
 
 	function doLogout(e){
 		e.preventDefault()
@@ -29,6 +39,11 @@ export default function Navbar({onSubmitHandler}){
 
 				<div className="flex items-center gap-[15px]">
 					<Searchbox onSubmitHandler={onSubmitHandler}/>
+
+					<button type="button" className="hover:bg-slate-50 rounded-md py-2 px-4">
+						<i className='text-indigo-900 text-2xl bx bx-cart'></i>
+					</button>
+
 					<div className="flex items-center gap-[10px]">
 						{!isLogin ? 
 							<Link 
@@ -36,10 +51,18 @@ export default function Navbar({onSubmitHandler}){
 							style="border rounded-md py-1 px-2 border-indigo-900 hover:text-white transition duration-300 hover:shadow-md hover:bg-indigo-900 capitalize"
 							>login</Link>
 							: 
-							<Link 
-							onClickHandler={doLogout}
-							style="border rounded-md py-1 px-2 border-indigo-900 hover:text-white transition duration-300 hover:shadow-md hover:bg-indigo-900 capitalize"
-							>logout</Link>
+							userInfo.map((user, index) => {
+								return (<Dropdown text="Settings" key={index}>
+											<div className="py-2 text-center">
+												Hello!, {user.username}
+											</div>
+											<div 
+												onClick={e=> doLogout(e)} 
+												className="py-2 text-center cursor-pointer bg-slate-50 hover:bg-slate-100">
+												<span>logout</span>
+											</div>
+										</Dropdown>)
+							})
 						}
 					</div>
 				</div>

@@ -12,13 +12,13 @@ export default function Home(){
     const [productsData, setProductsData] = useState([])
     const [error, setError] = useState({isError: false, message: ''})
     const [selectedCategory, setSelectedCategory] = useState("select category")
+    const [cart, setCart] = useState(localStorage.getItem('cart'))
     const [searchParams] = useSearchParams()
     const keyword = searchParams.get('q')
 
 
 
     useEffect(()=> {
-      console.log(keyword)
       if(keyword === null) {
         // get all products if keyword in url is empty
         getProducts(product.getAllProducts())
@@ -62,6 +62,32 @@ export default function Home(){
       getProductByCategory(category)
     }
 
+    function addToCart(e){
+      e.preventDefault()
+      const productId = e.target.dataset.productid
+
+      async function getProductsById(data){
+        const response = await data
+
+
+        const cartItem = {
+          id: +new Date(),
+          productId: response.id,
+          title: response.title,
+          brand: response.brand,
+          thumbnail: response.thumbnail,
+          price: response.price
+        }
+
+        setCart(cartItem)
+        console.log(cart)
+
+      }
+
+      getProductsById(product.getProduct(productId))
+      .catch(err=> console.error(err))
+    }
+
     return(
       <>
         <Navbar/>
@@ -91,8 +117,8 @@ export default function Home(){
                         <h5 className="font-semibold"><i className='text-indigo-900 bx bxs-check-circle'></i>{item.brand}</h5>
                         <span className="mt-1"><i className='bx bxs-star text-yellow-400 text-xl'></i> {item.rating}</span>
                     </Card.body>
-                    <Card.footer onClick={e => e.preventDefault()}>
-                        <button className="py-2 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700">
+                    <Card.footer >
+                        <button type="button" onClick={e => addToCart(e)} className="py-2 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700" data-productid={item.id}>
                          <i className="bx bx-cart"></i> Add to cart
                         </button>
                     </Card.footer>
