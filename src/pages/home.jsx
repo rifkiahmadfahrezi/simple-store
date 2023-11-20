@@ -5,6 +5,7 @@ import Card from '../component/card'
 import product from '../utils/data.js'
 import Dropdown from '../component/dropdown'
 import Skeleton from '../component/skeleton'
+import cart from '../utils/cart.js'
 
 export default function Home(){
 
@@ -12,7 +13,6 @@ export default function Home(){
     const [productsData, setProductsData] = useState([])
     const [error, setError] = useState({isError: false, message: ''})
     const [selectedCategory, setSelectedCategory] = useState("select category")
-    const [cart, setCart] = useState(localStorage.getItem('cart'))
     const [searchParams] = useSearchParams()
     const keyword = searchParams.get('q')
 
@@ -64,35 +64,38 @@ export default function Home(){
 
     function addToCart(e){
       e.preventDefault()
+      // get id from clicked btn
       const productId = e.target.dataset.productid
 
-      async function getProductsById(data){
+      // get Product info by ID
+      async function getProductById(data){
         const response = await data
-
-
+        
+        // create an object of product for display at the cart 
         const cartItem = {
-          id: +new Date(),
-          productId: response.id,
+          id: response.id,
           title: response.title,
-          brand: response.brand,
-          thumbnail: response.thumbnail,
+          img: response.thumbnail,
           price: response.price
         }
 
-        setCart(cartItem)
+        cart.items.push(cartItem)
+        cart.totalPrice += response.price 
+        
         console.log(cart)
+        localStorage.setItem('cart',JSON.stringify(cart))
 
       }
 
-      getProductsById(product.getProduct(productId))
-      .catch(err=> console.error(err))
+      getProductById(product.getProduct(Number(productId)))
+      .catch(err => console.error(err))
     }
 
     return(
       <>
         <Navbar/>
 
-        <div className="container mx-auto mt-5 container mx-auto w-[90%] sm:w-full">
+        <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold font-montserrat capitalize text-indigo-900"
             >our products</h2>
