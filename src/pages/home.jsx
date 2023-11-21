@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import {useLoaderData, useSearchParams} from 'react-router-dom'
 import Navbar from '../component/navbar'
 import Card from '../component/card'
+import Alert from '../component/Alert'
 import product from '../utils/data.js'
 import Dropdown from '../component/dropdown'
 import Skeleton from '../component/skeleton'
@@ -15,6 +16,7 @@ export default function Home(){
     const [selectedCategory, setSelectedCategory] = useState("select category")
     const [searchParams] = useSearchParams()
     const keyword = searchParams.get('q')
+    const [alert, setAlert] = useState(false)
 
 
 
@@ -70,21 +72,14 @@ export default function Home(){
       // get Product info by ID
       async function getProductById(data){
         const response = await data
+        cart.add(response)
         
-        // create an object of product for display at the cart 
-        const cartItem = {
-          id: response.id,
-          title: response.title,
-          img: response.thumbnail,
-          price: response.price
-        }
-
-        cart.items.push(cartItem)
-        cart.totalPrice += response.price 
-        
-        console.log(cart)
         localStorage.setItem('cart',JSON.stringify(cart))
 
+        setAlert(true)
+        setTimeout(()=> {
+          setAlert(false)
+        }, 3500)
       }
 
       getProductById(product.getProduct(Number(productId)))
@@ -93,7 +88,9 @@ export default function Home(){
 
     return(
       <>
+
         <Navbar/>
+        {alert && <Alert text="Product added to cart!"/>}
 
         <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center justify-between">
