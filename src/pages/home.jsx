@@ -73,8 +73,6 @@ export default function Home(){
       async function getProductById(data){
         const response = await data
         cart.add(response)
-        
-        localStorage.setItem('cart',JSON.stringify(cart))
 
         setAlert(true)
         setTimeout(()=> {
@@ -90,7 +88,7 @@ export default function Home(){
       <>
 
         <Navbar/>
-        {alert && <Alert text="Product added to cart!"/>}
+        {alert && <Alert bg="bg-green-500" text="Product added to cart!"/>}
 
         <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center justify-between">

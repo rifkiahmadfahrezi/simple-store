@@ -7,7 +7,7 @@ class Product {
 	}
 
 	async getProduct(id = 1 ){
-		const response = await fetch(`https://dummyjson.com/products/${id}`)
+		const response = await fetch(`https://dummyjson.com/products/${Number(id)}`)
 		const data = await response.json()
 		return data
 	}
