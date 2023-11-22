@@ -3,6 +3,7 @@ import Link from './../elements/link/Link'
 import Searchbox from './searchbox/Searchbox'
 import Dropdown from '../Dropdown'
 import {getUser} from '../../utils/user.js'
+import cart from '../../utils/cart.js'
 import Modal from './../Modal'
 
 
@@ -13,12 +14,14 @@ export default function Navbar({onSubmitHandler}){
 	const [ userInfo, setUserInfo ] = useState([])
 	const userId = sessionStorage.getItem('userId')
     const [ modalActive, setModalActive ] = useState(false)
-    const cart = JSON.parse(localStorage.getItem('cart')) || {items: [], totalPrice: 0}
+    const shoppingCart = JSON.parse(localStorage.getItem('cart')) || {items:[], totalPrice: 0}
+    const [quantity, setQuantity] = useState(0)
 
 	function inputChangeHandler(e){
 		const value = e.target.value
 	}
 	useEffect(()=> {
+		if (shoppingCart === undefined || shoppingCart === 'undefined') localStorage.removeItem('cart')
 		setUserInfo(getUser(userId))
 	}, [])
 
@@ -34,10 +37,23 @@ export default function Navbar({onSubmitHandler}){
 		modalActive ? setModalActive(false) : setModalActive(true) 
 	}
 
-	function qtyChangeHandler(e){
-		const value = e.target.value
-		
+	function addItem(item){
+		cart.add(item)
+		setQuantity(item.quantity++)
+		if(quantity > item.stock){
+			return false
+		}
+		console.log("add:", item.quantity)
+	}
 
+	function removeItem(item){
+		cart.decrease(item)
+		setQuantity(item.quantity--)
+		if(item.quantity <= 0){
+			cart.remove(item.id)
+			return false
+		}
+		console.log("remove:", item.quantity)
 	}
 
 	return(
@@ -58,7 +74,7 @@ export default function Navbar({onSubmitHandler}){
 							type="button" 
 							className="hover:bg-slate-50 rounded-md py-1 px-2">
 							<i className='text-indigo-900 text-2xl bx bx-cart'></i>
-							{cart.items?.length > 0 ?
+							{shoppingCart.items?.length > 0 ?
 								<span className="absolute right-[5px] bottom-[10px] flex h-3 w-3">
 								  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
 								  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -96,11 +112,11 @@ export default function Navbar({onSubmitHandler}){
 		{modalActive ? 
 			<Modal>
 				<Modal.Body closeModalHandler={toggleModal}>
-				{cart.items?.length > 0 ? 
+				{shoppingCart.items?.length > 0 ? 
 				// console.log(cart)
 				<Modal.Header>
 					<div className="flex items-center justify-between mr-5">
-						<p className="text-lg"><span className="font-bold">Total</span>: $ {cart.totalPrice}</p>
+						<p className="text-lg"><span className="font-bold">Total</span>: $ {shoppingCart.totalPrice}</p>
 
 						<Link 
 							to="/checkout" 
@@ -112,36 +128,57 @@ export default function Navbar({onSubmitHandler}){
 				}
 
 					<div className="p-3">
-						{cart.items?.length > 0 ? 
-						cart.items.map((item, index) => {
+						{shoppingCart.items?.length > 0 ? 
+						shoppingCart.items.map((item, index) => {
 							return (
-								<div key={`${item.id}-${index}`} className="flex gap-3 border-b-2 border-indigo-900 py-2 mb-2">
-									<figure>
-										<img 
-										src={item.img} 
-										alt="image of products"
-										className="object-contain w-[100px] h-[100px]"/>
-									</figure>
-									<figcaption className="flex flex-col justify-between">
-										<div>
-											<h4 className="font-semibold">{item.title}</h4>
-											<h6 className="font-reguler">$ {item.price}</h6>
-										</div>
+								<div key={`${item.id}-${index}`} className="flex gap-3 border-b-2 border-indigo-900 py-2 mb-2 items-center justify-between">
+									<div className="flex">
+										<figure>
+											<img 
+											src={item.img} 
+											alt="image of products"
+											className="object-contain w-[100px] h-[100px]"/>
+										</figure>
+										<figcaption className="flex flex-col ml-2 justify-between">
+											<div>
+												<h4 className="font-semibold">{item.title}</h4>
+												<h6 className="font-reguler">
+													${item.price} &times; {item.quantity} = ${item.totalProductPrice}</h6>
+											</div>
 
-										<form className="flex border border-1-indigo-100 rounded-sm">
-											<button 
-												type="button"
-												className="bg-indigo-50 py-1 px-2">
-												<i className='bx bx-minus'></i>
-											</button>
-											<input onChange={(e)=> qtyChangeHandler(e)} className="w-[60px] text-center" type="number" value={item.quantity}/>
-											<button 
-												type="button"
-												className="bg-indigo-50 py-1 px-2">
-												<i className='bx bx-plus'></i>
-											</button>
-										</form>
-									</figcaption>
+											<form onSubmit={e=> e.preventDefault()} className="flex rounded-sm">
+												<button 
+													type="button"
+													className="bg-indigo-50 py-1 px-2"
+													onClick={()=> removeItem(item)} >
+													<i className='bx bx-minus'></i>
+												</button>
+												<input 
+													onChange={(e)=> setQuantity(e.target.value)} 
+													onInput={(e)=> setQuantity(e.target.value)} 
+													className="w-[60px] text-center bg-slate-50" 
+													type="number"
+													value={item.quantity}/>
+												<button 
+													type="button"
+													className="bg-indigo-50 py-1 px-2"
+													onClick={()=> addItem(item)}>
+													<i className='bx bx-plus'></i>
+												</button>
+											</form>
+										</figcaption>
+									</div>
+									<div>
+										<button 
+											type="button" 
+											className="text-red-500 p-2 rounded-sm text-2xl hover:bg-red-50"
+											onClick={()=> {
+												item.quantity = 0
+												removeItem(item)
+											}}>
+											<i className='bx bx-trash'></i>
+										</button>
+									</div>
 								</div>
 							)
 						})	
