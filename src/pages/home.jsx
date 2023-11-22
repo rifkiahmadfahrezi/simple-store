@@ -15,30 +15,14 @@ export default function Home(){
     const [error, setError] = useState({isError: false, message: ''})
     const [selectedCategory, setSelectedCategory] = useState("select category")
     const [searchParams] = useSearchParams()
-    const keyword = searchParams.get('q')
+    const keyword = searchParams.get('q').toLowerCase()
     const [alert, setAlert] = useState(false)
 
 
 
     useEffect(()=> {
-      if(keyword === null) {
-        // get all products if keyword in url is empty
-        getProducts(product.getAllProducts())
-        .catch(error => console.error(error)) 
-      }else{
-        async function searchProduct(data){
-          const response = await data
-          if(response.total <= 0){
-            // get all products if searched product not found
-            setError({isError: true, message: `Sorry ${keyword} product is not found, please try again`})
-          }
-
-          setProductsData(await data)
-        }
-        // get product by keyword if keyword in url is not empty
-        searchProduct(product.searchProduct(keyword))
-        .catch(err => console.error(err))
-      }
+      getProducts(product.getAllProducts())
+      .catch(error => console.error(error)) 
 
       async function getCategories(data){
         setCategories(await data)
@@ -86,7 +70,6 @@ export default function Home(){
 
     return(
       <>
-
         <Navbar/>
         {alert && <Alert bg="bg-green-500" text="Product added to cart!"/>}
 
@@ -105,7 +88,12 @@ export default function Home(){
         <div className="grid container mx-auto w-[90%] sm:w-full mt-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
 
             {productsData.products?.length > 0 ?
-              productsData.products.map(item => {
+              productsData.products.filter((item) => {
+                if(keyword !== null) {
+                  return (item.title.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword))
+                }
+                return productsData.products
+              })?.map(item => {
                 return (
                   <Card key={item.id} to={`/product/${item.id}`} style={`cursor-pointer hover:shadow-2xl shadow-md transition duration-300`} discount={item.discountPercentage}>
                     <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
