@@ -14,14 +14,13 @@ export default function Navbar({onSubmitHandler}){
 	const [ userInfo, setUserInfo ] = useState([])
 	const userId = sessionStorage.getItem('userId')
     const [ modalActive, setModalActive ] = useState(false)
-    const shoppingCart = JSON.parse(localStorage.getItem('cart')) || {items:[], totalPrice: 0}
-    const [quantity, setQuantity] = useState(0)
+    const shoppingCart = JSON.parse(localStorage.getItem('cart')) ?? {items:[], totalPrice: 0}
+    // remove cart item with no id 
+    shoppingCart.items = shoppingCart.items.filter(item => item.id !== undefined)
 
-	function inputChangeHandler(e){
-		const value = e.target.value
-	}
 	useEffect(()=> {
 		if (shoppingCart === undefined || shoppingCart === 'undefined') localStorage.removeItem('cart')
+		localStorage.setItem('cart', JSON.stringify({items: shoppingCart.items, totalPrice: shoppingCart.totalPrice}))
 		setUserInfo(getUser(userId))
 	}, [])
 
@@ -39,21 +38,21 @@ export default function Navbar({onSubmitHandler}){
 
 	function addItem(item){
 		cart.add(item)
-		setQuantity(item.quantity++)
-		if(quantity > item.stock){
+		if(item.quantity > item.stock){
 			return false
 		}
+		console.log(localStorage.getItem('cart'))
 		console.log("add:", item.quantity)
 	}
 
-	function removeItem(item){
+	function decreaseItem(item){
 		cart.decrease(item)
-		setQuantity(item.quantity--)
-		if(item.quantity <= 0){
-			cart.remove(item.id)
-			return false
-		}
-		console.log("remove:", item.quantity)
+		console.log(localStorage.getItem('cart'))
+	}
+
+	function removeItem(id){
+		cart.remove(Number(id))
+		console.log(localStorage.getItem('cart'))
 	}
 
 	return(
@@ -128,6 +127,7 @@ export default function Navbar({onSubmitHandler}){
 				}
 
 					<div className="p-3">
+						{console.log(shoppingCart)}
 						{shoppingCart.items?.length > 0 ? 
 						shoppingCart.items.map((item, index) => {
 							return (
@@ -150,7 +150,7 @@ export default function Navbar({onSubmitHandler}){
 												<button 
 													type="button"
 													className="bg-indigo-50 py-1 px-2"
-													onClick={()=> removeItem(item)} >
+													onClick={()=> decreaseItem(item)} >
 													<i className='bx bx-minus'></i>
 												</button>
 												<input 
@@ -173,8 +173,7 @@ export default function Navbar({onSubmitHandler}){
 											type="button" 
 											className="text-red-500 p-2 rounded-sm text-2xl hover:bg-red-50"
 											onClick={()=> {
-												item.quantity = 0
-												removeItem(item)
+												removeItem(item.id)
 											}}>
 											<i className='bx bx-trash'></i>
 										</button>

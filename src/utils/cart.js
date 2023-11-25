@@ -1,9 +1,17 @@
+import product from './data.js'
+
+
 const cart = {
 	items: [],
 	totalPrice: 0,
+	getThumbnail: async function(item,data){
+		console.log(await data)
+		item.img = await data
+	},
 	add: function (productInfo) {
 
-		if (productInfo === undefined) return false
+		if (productInfo === undefined) return this.items
+
 
 		const cartItem = {
           id: productInfo.id,
@@ -21,6 +29,13 @@ const cart = {
         }else{
         	this.items = this.items.map(item => {
         		if(item.id != cartItem.id) return item
+
+        		// get product thumbnail if img is undefined
+    			if(item.img == undefined || item.img == null){
+    				this.getThumbnail(item, product.getThumbnail(productInfo.id))
+					.catch((err) => console.log(err))
+    			}
+
         		item.quantity++
     			item.totalProductPrice = item.price * item.quantity
 				this.totalPrice += item.price
@@ -28,38 +43,86 @@ const cart = {
   
         	})
         }
-        localStorage.setItem('cart', JSON.stringify(this))
+        // remove cart item with no id 
+    	this.items = this.items.filter(item => item.id !== undefined)
+
+        localStorage.setItem('cart', JSON.stringify({
+			items: this.items,
+			totalPrice: this.totalPrice
+		}))
 	},
 	decrease: function(productInfo){
 
 		const cartProduct = this.items.find(item => item.id === productInfo.id) ?? false
 
-
-		if(cartProduct !== undefined){
+		if(cartProduct){
 			this.items = this.items.map(item => {
-        		if(item.id != productInfo.id) return item
+        		if(item.id == productInfo.id){
+        			// get product thumbnail if img is undefined
+        			if(item.img == undefined || item.img == null){
+        				this.getThumbnail(item, product.getThumbnail(productInfo.id))
+						.catch((err) => console.log(err))
+        			}
 
-        		item.quantity--
-    			item.totalProductPrice = item.price * item.quantity
-				this.totalPrice -= item.price
-				return item
+        			if(item.quantity <= 1){
+        				Swal.fire({
+						  title: "Are you sure?",
+						  text: "You won't be able to revert this!",
+						  icon: "warning",
+						  showCancelButton: true,
+						  confirmButtonColor: "#3085d6",
+						  cancelButtonColor: "#d33",
+						  confirmButtonText: "Yes, delete it!"
+						}).then((result) => {
+						  if (result.isConfirmed) {
+						    Swal.fire({
+						      title: "Deleted!",
+						      text: "Product deleted from cart!",
+						      icon: "success"
+						    });
+						  	this.remove(item.id)
+        					return item.id != productInfo.id
+						  }
+						});
+        			}else{
+        				item.quantity--
+        				item.totalProductPrice = item.price * item.quantity
+        				this.totalPrice -= item.price
+        				return item
+        			}
+        		}
+        		return item
         	})
-		}else{
-			console.log('ok')
 		}
+		// remove cart item with no id 
+    	this.items = this.items.filter(item => item.id !== undefined)
 
-		localStorage.setItem('cart', JSON.stringify(this))
+    	console.log(this.items)
+
+		localStorage.setItem('cart', JSON.stringify({
+			items: this.items,
+			totalPrice: this.totalPrice
+		}))
 
 	},
 	remove: function(id){
-		this.items = this.items.filter(item => item.id !== id)
-		this.items.map(item => {
-			if(item.id === id){
-				this.totalPrice -= item.totalProductPrice
-			}
-		})
 
-		localStorage.setItem('cart', JSON.stringify(this))
+		const cartProduct = this.items.find(item => item.id == id)
+		if(cartProduct){
+			this.items = this.items.filter(item => {
+				if (item.id == id) {
+					item.quantity = 0
+					this.totalPrice -= item.totalProductPrice
+				}
+				return item.id != id
+        	})
+        	console.log(this.items)
+		}
+
+		localStorage.setItem('cart', JSON.stringify({
+			items: this.items,
+			totalPrice: this.totalPrice
+		}))
 
 	}
 }

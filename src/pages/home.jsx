@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react'
 import {useLoaderData, useSearchParams} from 'react-router-dom'
 import Navbar from '../component/navbar'
 import Card from '../component/card'
-import Alert from '../component/Alert'
 import product from '../utils/data.js'
 import Dropdown from '../component/dropdown'
 import Skeleton from '../component/skeleton'
@@ -14,10 +13,8 @@ export default function Home(){
     const [productsData, setProductsData] = useState([])
     const [error, setError] = useState({isError: false, message: ''})
     const [selectedCategory, setSelectedCategory] = useState("select category")
-    const [searchParams] = useSearchParams()
+    const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q').toLowerCase()
-    const [alert, setAlert] = useState(false)
-
 
 
     useEffect(()=> {
@@ -58,10 +55,12 @@ export default function Home(){
         const response = await data
         cart.add(response)
 
-        setAlert(true)
-        setTimeout(()=> {
-          setAlert(false)
-        }, 3500)
+        let timerInterval;
+        Swal.fire({
+          title: "Product added to cart!",
+          timer: 1500,
+          timerProgressBar: true,
+        });
       }
 
       getProductById(product.getProduct(Number(productId)))
@@ -71,12 +70,25 @@ export default function Home(){
     return(
       <>
         <Navbar/>
-        {alert && <Alert bg="bg-green-500" text="Product added to cart!"/>}
 
         <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold font-montserrat capitalize text-indigo-900"
             >our products</h2>
+
+            {(keyword === null || keyword != '')
+              ? <button 
+                  onClick={()=> {
+                    setSearchParams(prev => {
+                      prev.set('q', '')
+                      return prev
+                    },{ replace: true})
+                  }}
+                  className="py-1 px-2 font-montserrat capitalize bg-indigo-50 rounded-md flex items-center">
+                  show all products <i className='ml-2 bx bx-refresh'></i>
+                </button>
+              : null
+            }
 
             <Dropdown text={selectedCategory.split('-').join(' ')}>
               {categories.sort()?.map((item, i) => <span key={i} data-category={item} className="text-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-slate-200 capitalize" onClick={(e)=> dropdownItemClickHandler(e)}>{item.split('-').join(' ')}</span>)}
@@ -89,11 +101,13 @@ export default function Home(){
 
             {productsData.products?.length > 0 ?
               productsData.products.filter((item) => {
-                if(keyword !== null) {
-                  return (item.title.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword))
+                if(keyword !== null || keyword != '') {
+                  return item.title.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword) 
+                }else{
+                  return productsData.products
                 }
-                return productsData.products
               })?.map(item => {
+                
                 return (
                   <Card key={item.id} to={`/product/${item.id}`} style={`cursor-pointer hover:shadow-2xl shadow-md transition duration-300`} discount={item.discountPercentage}>
                     <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>

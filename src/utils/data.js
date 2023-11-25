@@ -29,6 +29,12 @@ class Product {
 		const data =  await response.json()
 		return data
 	}
+
+	async getThumbnail(id){
+		const response = await fetch(`https://dummyjson.com/products/${Number(id)}`)
+		const data = await response.json()
+		return data.thumbnail
+	}
 }
 const product = new Product()
 export default product
