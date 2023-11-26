@@ -1,5 +1,5 @@
 import product from './data.js'
-
+const cartItems = JSON.parse(localStorage.getItem('cart')) ?? {items: [], totalPrice: 0}
 
 const cart = {
 	items: [],
@@ -9,6 +9,7 @@ const cart = {
 		item.img = await data
 	},
 	add: function (productInfo) {
+		console.log(cartItems)
 
 		if (productInfo === undefined) return this.items
 
@@ -21,13 +22,21 @@ const cart = {
           stock: productInfo.stock
         }
 
-        const cartProduct = this.items.find(item => item.id === cartItem.id) ?? false
-    
+        const cartProduct = this.items.find(item => item.id === cartItem.id)
         if(!cartProduct){
         	this.items.push({...cartItem, quantity: 1, totalProductPrice: cartItem.price})
         	this.totalPrice += cartItem.price
+
+        	        // remove cart item with no id 
+	    	this.items = this.items.filter(item => item.id !== undefined)
+	    	this.items = [...cartItems.items ,...this.items]
+	        localStorage.setItem('cart', JSON.stringify({
+				items: this.items,
+				totalPrice: this.totalPrice
+			}))
+
         }else{
-        	this.items = this.items.map(item => {
+        	this.items = this.items.filter(item => {
         		if(item.id != cartItem.id) return item
 
         		// get product thumbnail if img is undefined
@@ -42,20 +51,21 @@ const cart = {
 				return item
   
         	})
-        }
-        // remove cart item with no id 
+
+        	        // remove cart item with no id 
     	this.items = this.items.filter(item => item.id !== undefined)
 
         localStorage.setItem('cart', JSON.stringify({
 			items: this.items,
 			totalPrice: this.totalPrice
 		}))
+        }
 	},
 	decrease: function(productInfo){
 
-		const cartProduct = this.items.find(item => item.id === productInfo.id) ?? false
+		const cartProduct = this.items.find(item => item.id === productInfo.id)
 
-		if(cartProduct){
+		if(!cartProduct){
 			this.items = this.items.map(item => {
         		if(item.id == productInfo.id){
         			// get product thumbnail if img is undefined
@@ -83,7 +93,7 @@ const cart = {
 						  	this.remove(item.id)
         					return item.id != productInfo.id
 						  }
-						});
+						})
         			}else{
         				item.quantity--
         				item.totalProductPrice = item.price * item.quantity
@@ -97,31 +107,68 @@ const cart = {
 		// remove cart item with no id 
     	this.items = this.items.filter(item => item.id !== undefined)
 
-    	console.log(this.items)
-
 		localStorage.setItem('cart', JSON.stringify({
-			items: this.items,
+			items: [cartItems, ...this.items],
 			totalPrice: this.totalPrice
 		}))
 
 	},
 	remove: function(id){
-
-		const cartProduct = this.items.find(item => item.id == id)
-		if(cartProduct){
-			this.items = this.items.filter(item => {
-				if (item.id == id) {
-					item.quantity = 0
-					this.totalPrice -= item.totalProductPrice
-				}
+		// show confirm popup
+		Swal.fire({
+		  title: "Are you sure?",
+		  text: "You won't be able to revert this!",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3085d6",
+		  cancelButtonColor: "#d33",
+		  confirmButtonText: "Yes, delete it!"
+		}).then((result) => {
+			// if user confirmed to delete the product
+		  if (result.isConfirmed) {
+		  	this.items = this.items.filter(item => {
+				if (item.id == id) this.totalPrice -= item.totalProductPrice
 				return item.id != id
         	})
-        	console.log(this.items)
-		}
+
+		  	// find removed product
+        	const removedProduct = this.items.find(item => item.id == id)
+        	// if removed product is not found
+        	// then show the success popup
+        	if(removedProduct === undefined) {
+        		Swal.fire({
+				  title: "Success",
+				  text: "This product deleted from cart!",
+				  icon: "success"
+				})
+			// if removed product still found 
+        	// show the unsuccess pop up
+        	}else{
+        		Swal.fire({
+				  title: "Failed",
+				  text: "This product failed to delete from cart, please try again!",
+				  icon: "error"
+				})
+        	}
+
+        	localStorage.setItem('cart', JSON.stringify({
+				items: this.items,
+				totalPrice: this.totalPrice
+			}))
+
+		  }
+		})
+	
+
+	},
+	renewTotalPrice: function(shoppingCart){
+		shoppingCart.items.forEach((item) => {
+			shoppingCart.totalPrice += item.totaProductPrice
+		})
 
 		localStorage.setItem('cart', JSON.stringify({
 			items: this.items,
-			totalPrice: this.totalPrice
+			totalPrice: shoppingCart.totalPrice
 		}))
 
 	}

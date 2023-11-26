@@ -23,7 +23,7 @@ class Product {
 		const data =  await response.json()
 		// console.log('ok',data)
 		return data
-	}
+	}	
 	async getProductByCategory(category){
 		const response = await fetch(`https://dummyjson.com/products/category/${category}`)
 		const data =  await response.json()

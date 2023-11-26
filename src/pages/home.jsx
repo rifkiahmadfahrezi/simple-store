@@ -15,6 +15,8 @@ export default function Home(){
     const [selectedCategory, setSelectedCategory] = useState("select category")
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q').toLowerCase()
+    const [shoppingCart, setShoppingcart] = useState(JSON.parse(localStorage.getItem('cart')) ?? {items: [], totalPrice: 0})
+    const [ productQuantity, setProductQuantity ] = useState(0)
 
 
     useEffect(()=> {
@@ -32,7 +34,20 @@ export default function Home(){
       getCategories(product.getAllCategory())
       .catch(error => console.error(error)) 
       
+
+      const items = JSON.parse(localStorage.getItem('cart'));
+      if (items) {
+       setShoppingcart(items);
+      }
     },[])
+
+
+    useEffect(()=> {
+      localStorage.setItem('cart', JSON.stringify(shoppingCart))
+      console.log(shoppingCart)
+        // shoppingCart.items = shoppingCart.items.filter(item => item.id !== undefined)
+    }, [shoppingCart])
+
 
     async function getProductByCategory(category){
       setProductsData([])
@@ -52,24 +67,60 @@ export default function Home(){
 
       // get Product info by ID
       async function getProductById(data){
-        const response = await data
-        cart.add(response)
-
+        const response = await data ?? false
         let timerInterval;
-        Swal.fire({
-          title: "Product added to cart!",
-          timer: 1500,
-          timerProgressBar: true,
-        });
+
+        if(!response){
+          Swal.fire({
+            title: "Adding product to cart failed!",
+            timer: 1500,
+            timerProgressBar: true,
+            icon: 'success'
+          });
+        }else{
+          addItem(response)
+          Swal.fire({
+            title: "Product added to cart!",
+            timer: 1500,
+            timerProgressBar: true,
+          });
+        }
+        
       }
 
       getProductById(product.getProduct(Number(productId)))
       .catch(err => console.error(err))
     }
 
+    function addItem(item){
+      cart.add(item)
+      setProductQuantity(item.quantity)
+      if(item.quantity > item.stock){
+        return false
+      }
+      setShoppingcart(JSON.parse(localStorage.getItem('cart')))
+    }
+
+    function decreaseItem(item){
+      cart.decrease(item)
+      setProductQuantity(item.quantity)
+
+      setShoppingcart(JSON.parse(localStorage.getItem('cart')))
+    }
+
+    function removeItem(id){
+      cart.remove(Number(id))
+      setShoppingcart(JSON.parse(localStorage.getItem('cart')))
+    }
+
+
     return(
       <>
-        <Navbar/>
+        <Navbar 
+          cartItems={shoppingCart} 
+          addItem={addItem} 
+          decreaseItem={decreaseItem} 
+          removeItem={removeItem}/>
 
         <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center justify-between">

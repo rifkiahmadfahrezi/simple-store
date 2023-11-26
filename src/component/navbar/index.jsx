@@ -7,23 +7,18 @@ import cart from '../../utils/cart.js'
 import Modal from './../Modal'
 
 
-export default function Navbar({onSubmitHandler}){
+export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmitHandler, addItem, decreaseItem, removeItem}){
 
 	// json.parse for change string to boolean
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')))
 	const [ userInfo, setUserInfo ] = useState([])
 	const userId = sessionStorage.getItem('userId')
     const [ modalActive, setModalActive ] = useState(false)
-    const shoppingCart = JSON.parse(localStorage.getItem('cart')) ?? {items:[], totalPrice: 0}
-    // remove cart item with no id 
-    shoppingCart.items = shoppingCart.items.filter(item => item.id !== undefined)
 
-	useEffect(()=> {
-		if (shoppingCart === undefined || shoppingCart === 'undefined') localStorage.removeItem('cart')
-		localStorage.setItem('cart', JSON.stringify({items: shoppingCart.items, totalPrice: shoppingCart.totalPrice}))
+	useEffect(() => {
+		if (cartItems == null) cartItems = {items: [], totalPrice: 0}
 		setUserInfo(getUser(userId))
 	}, [])
-
 
 
 	function doLogout(e){
@@ -34,25 +29,6 @@ export default function Navbar({onSubmitHandler}){
 
 	function toggleModal(){
 		modalActive ? setModalActive(false) : setModalActive(true) 
-	}
-
-	function addItem(item){
-		cart.add(item)
-		if(item.quantity > item.stock){
-			return false
-		}
-		console.log(localStorage.getItem('cart'))
-		console.log("add:", item.quantity)
-	}
-
-	function decreaseItem(item){
-		cart.decrease(item)
-		console.log(localStorage.getItem('cart'))
-	}
-
-	function removeItem(id){
-		cart.remove(Number(id))
-		console.log(localStorage.getItem('cart'))
 	}
 
 	return(
@@ -73,7 +49,7 @@ export default function Navbar({onSubmitHandler}){
 							type="button" 
 							className="hover:bg-slate-50 rounded-md py-1 px-2">
 							<i className='text-indigo-900 text-2xl bx bx-cart'></i>
-							{shoppingCart.items?.length > 0 ?
+							{cartItems.items?.length > 0 ?
 								<span className="absolute right-[5px] bottom-[10px] flex h-3 w-3">
 								  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
 								  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -111,11 +87,14 @@ export default function Navbar({onSubmitHandler}){
 		{modalActive ? 
 			<Modal>
 				<Modal.Body closeModalHandler={toggleModal}>
-				{shoppingCart.items?.length > 0 ? 
+				{cartItems.items?.length > 0 ? 
 				// console.log(cart)
 				<Modal.Header>
 					<div className="flex items-center justify-between mr-5">
-						<p className="text-lg"><span className="font-bold">Total</span>: $ {shoppingCart.totalPrice}</p>
+						<p className="text-lg">
+							<span className="font-bold">Total</span>
+							: ${cartItems.totalPrice == null ? cart.renewTotalPrice(cartItems) : cartItems.totalPrice}
+						</p>
 
 						<Link 
 							to="/checkout" 
@@ -127,9 +106,8 @@ export default function Navbar({onSubmitHandler}){
 				}
 
 					<div className="p-3">
-						{console.log(shoppingCart)}
-						{shoppingCart.items?.length > 0 ? 
-						shoppingCart.items.map((item, index) => {
+						{cartItems.items?.length > 0 ? 
+						cartItems.items.map((item, index) => {
 							return (
 								<div key={`${item.id}-${index}`} className="flex gap-3 border-b-2 border-indigo-900 py-2 mb-2 items-center justify-between">
 									<div className="flex">
@@ -158,7 +136,7 @@ export default function Navbar({onSubmitHandler}){
 													onInput={(e)=> setQuantity(e.target.value)} 
 													className="w-[60px] text-center bg-slate-50" 
 													type="number"
-													value={item.quantity}/>
+													value={ item.quantity }/>
 												<button 
 													type="button"
 													className="bg-indigo-50 py-1 px-2"
