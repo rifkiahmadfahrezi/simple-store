@@ -158,7 +158,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 									</div>
 								</div>
 							)
-						})	
+						}).sort().reverse()
 						: <p className="text-slate-500 text-center">Cart is empty :(</p>
 					}
 					</div>
