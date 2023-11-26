@@ -43,7 +43,13 @@ export default function Home(){
 
 
     useEffect(()=> {
-      localStorage.setItem('cart', JSON.stringify(shoppingCart))
+      if (shoppingCart.length > 1){
+        const cartItems = shoppingCart.filter((item) => item.id != undefined) 
+        console.log(cartItems)
+         localStorage.setItem('cart', JSON.stringify(cartItems))
+      }else{
+         localStorage.setItem('cart', JSON.stringify(shoppingCart))
+      }
       console.log(shoppingCart)
         // shoppingCart.items = shoppingCart.items.filter(item => item.id !== undefined)
     }, [shoppingCart])

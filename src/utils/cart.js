@@ -1,16 +1,24 @@
 import product from './data.js'
-const cartItems = JSON.parse(localStorage.getItem('cart')) ?? {items: [], totalPrice: 0}
+
+function getCartItems() {
+	return JSON.parse(localStorage.getItem('cart')) !== null 
+			? JSON.parse(localStorage.getItem('cart')).items 
+			: []
+}
+function getCartTotalPrice() {
+	return JSON.parse(localStorage.getItem('cart')) !== null 
+			? JSON.parse(localStorage.getItem('cart')).totalPrice 
+			: 0
+}
 
 const cart = {
-	items: [],
-	totalPrice: 0,
+	items: getCartItems(),
+	totalPrice: getCartTotalPrice(),
 	getThumbnail: async function(item,data){
 		console.log(await data)
 		item.img = await data
 	},
 	add: function (productInfo) {
-		console.log(cartItems)
-
 		if (productInfo === undefined) return this.items
 
 
@@ -24,17 +32,10 @@ const cart = {
 
         const cartProduct = this.items.find(item => item.id === cartItem.id)
         if(!cartProduct){
+        	console.log('ok')
         	this.items.push({...cartItem, quantity: 1, totalProductPrice: cartItem.price})
         	this.totalPrice += cartItem.price
-
-        	        // remove cart item with no id 
-	    	this.items = this.items.filter(item => item.id !== undefined)
-	    	this.items = [...cartItems.items ,...this.items]
-	        localStorage.setItem('cart', JSON.stringify({
-				items: this.items,
-				totalPrice: this.totalPrice
-			}))
-
+        	console.log(this)
         }else{
         	this.items = this.items.filter(item => {
         		if(item.id != cartItem.id) return item
@@ -52,14 +53,13 @@ const cart = {
   
         	})
 
-        	        // remove cart item with no id 
+        }
+        // remove cart item with no id 
     	this.items = this.items.filter(item => item.id !== undefined)
-
         localStorage.setItem('cart', JSON.stringify({
 			items: this.items,
 			totalPrice: this.totalPrice
 		}))
-        }
 	},
 	decrease: function(productInfo){
 
