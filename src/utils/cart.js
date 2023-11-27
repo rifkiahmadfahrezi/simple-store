@@ -14,10 +14,6 @@ function getCartTotalPrice() {
 const cart = {
 	items: getCartItems(),
 	totalPrice: getCartTotalPrice(),
-	getThumbnail: async function(item,data){
-		console.log(await data)
-		item.img = await data
-	},
 	add: function (productInfo) {
 		if (productInfo === undefined) return this.items
 
@@ -40,9 +36,18 @@ const cart = {
         	this.items = this.items.filter(item => {
         		if(item.id != cartItem.id) return item
 
+        		if(item.quantity >= item.stock){
+        			item.quantity = item.stock
+        		}
+
         		// get product thumbnail if img is undefined
     			if(item.img == undefined || item.img == null){
-    				this.getThumbnail(item, product.getThumbnail(productInfo.id))
+    				async function getThumbnail(data){
+    					console.log(await data)
+						item.img = await data
+					}
+
+					getThumbnail(product.getThumbnail(productInfo.id))
 					.catch((err) => console.log(err))
     			}
 
@@ -60,17 +65,25 @@ const cart = {
 			items: this.items,
 			totalPrice: this.totalPrice
 		}))
+
+		return this
 	},
 	decrease: function(productInfo){
 
+
+
 		const cartProduct = this.items.find(item => item.id === productInfo.id)
 
-		if(!cartProduct){
+		if(cartProduct){
 			this.items = this.items.map(item => {
         		if(item.id == productInfo.id){
         			// get product thumbnail if img is undefined
         			if(item.img == undefined || item.img == null){
-        				this.getThumbnail(item, product.getThumbnail(productInfo.id))
+        				async function getThumbnail(data){
+							item.img = await data
+						}
+
+						getThumbnail(product.getThumbnail(productInfo.id))
 						.catch((err) => console.log(err))
         			}
 
@@ -96,6 +109,7 @@ const cart = {
 						})
         			}else{
         				item.quantity--
+        				console.log(item.quantity)
         				item.totalProductPrice = item.price * item.quantity
         				this.totalPrice -= item.price
         				return item
@@ -108,57 +122,84 @@ const cart = {
     	this.items = this.items.filter(item => item.id !== undefined)
 
 		localStorage.setItem('cart', JSON.stringify({
-			items: [cartItems, ...this.items],
+			items: this.items,
 			totalPrice: this.totalPrice
 		}))
 
 	},
 	remove: function(id){
-		// show confirm popup
-		Swal.fire({
-		  title: "Are you sure?",
-		  text: "You won't be able to revert this!",
-		  icon: "warning",
-		  showCancelButton: true,
-		  confirmButtonColor: "#3085d6",
-		  cancelButtonColor: "#d33",
-		  confirmButtonText: "Yes, delete it!"
-		}).then((result) => {
-			// if user confirmed to delete the product
-		  if (result.isConfirmed) {
-		  	this.items = this.items.filter(item => {
-				if (item.id == id) this.totalPrice -= item.totalProductPrice
-				return item.id != id
-        	})
+		this.items = this.items.filter(item => {
+			if (item.id == id) {
+				item.quantity = 0
+				this.totalPrice -= item.totalProductPrice
+			}
+			return item.id != id
+    	})
 
-		  	// find removed product
-        	const removedProduct = this.items.find(item => item.id == id)
-        	// if removed product is not found
-        	// then show the success popup
-        	if(removedProduct === undefined) {
-        		Swal.fire({
-				  title: "Success",
-				  text: "This product deleted from cart!",
-				  icon: "success"
-				})
-			// if removed product still found 
-        	// show the unsuccess pop up
-        	}else{
-        		Swal.fire({
-				  title: "Failed",
-				  text: "This product failed to delete from cart, please try again!",
-				  icon: "error"
-				})
-        	}
+		const removedProduct = this.items.find(item => item.id == id)
 
-        	localStorage.setItem('cart', JSON.stringify({
+		if (removedProduct === undefined) {
+			localStorage.setItem('cart', JSON.stringify({
 				items: this.items,
 				totalPrice: this.totalPrice
 			}))
+		}
+		return this
+    	
 
-		  }
-		})
-	
+	// let isRemoved = false
+	// 	// show confirm popup
+	// 	Swal.fire({
+	// 	  title: "Are you sure?",
+	// 	  text: "You won't be able to revert this!",
+	// 	  icon: "warning",
+	// 	  showCancelButton: true,
+	// 	  confirmButtonColor: "#3085d6",
+	// 	  cancelButtonColor: "#d33",
+	// 	  confirmButtonText: "Yes, delete it!"
+	// 	}).then((result) => {
+	// 		// if user confirmed to delete the product
+	// 	  if (result.isConfirmed) {
+	// 	  	this.items = this.items.filter(item => {
+	// 			if (item.id == id) {
+	// 				item.quantity = 0
+	// 				this.totalPrice -= item.totalProductPrice
+	// 			}
+	// 			return item.id != id
+    //     	})
+
+	// 	  	// find removed product
+    //     	const removedProduct = this.items.find(item => item.id == id)
+    //     	// if removed product is not found
+    //     	// then show the success popup
+    //     	if(removedProduct === undefined) {
+    //     		isRemoved = true
+
+    //     		Swal.fire({
+	// 			  title: "Success",
+	// 			  text: "This product deleted from cart!",
+	// 			  icon: "success"
+	// 			})
+	// 			// if removed product still found 
+	//         	// show the unsuccess pop up
+	//         	}else{
+	//         		isRemoved = false
+
+	//         		Swal.fire({
+	// 				  title: "Failed",
+	// 				  text: "This product failed to delete from cart, please try again!",
+	// 				  icon: "error"
+	// 				})
+	//         	}
+
+	//         	localStorage.setItem('cart', JSON.stringify({
+	// 				items: this.items,
+	// 				totalPrice: this.totalPrice
+	// 			}))
+	//         console.log(isRemoved)
+	//         return isRemoved
+	// 	  }
+	// 	})
 
 	},
 	renewTotalPrice: function(shoppingCart){

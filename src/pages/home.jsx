@@ -21,7 +21,18 @@ export default function Home(){
 
     useEffect(()=> {
       getProducts(product.getAllProducts())
-      .catch(error => console.error(error)) 
+      .catch(error => {
+        console.error(error)
+
+        Swal.fire({
+          title: 'Someting went wrong :(',
+          text: 'Fail to get products data from server, please wait!',
+          timer: 1500,
+          timerProgressBar: true,
+        })
+
+        setTimeout(()=> location.reload(), 1500)
+      }) 
 
       async function getCategories(data){
         setCategories(await data)
@@ -32,7 +43,17 @@ export default function Home(){
 
       // get all product categories
       getCategories(product.getAllCategory())
-      .catch(error => console.error(error)) 
+      .catch(error => {
+        console.error(error)
+        Swal.fire({
+          title: 'Someting went wrong :(',
+          text: 'Fail to get product categories data from server, please wait!',
+          timer: 1500,
+          timerProgressBar: true,
+        })
+
+        setTimeout(()=> location.reload(), 1500)
+      }) 
       
 
       const items = JSON.parse(localStorage.getItem('cart'));
@@ -74,22 +95,29 @@ export default function Home(){
       // get Product info by ID
       async function getProductById(data){
         const response = await data ?? false
-        let timerInterval;
-
         if(!response){
           Swal.fire({
             title: "Adding product to cart failed!",
             timer: 1500,
             timerProgressBar: true,
-            icon: 'success'
+            icon: 'error'
           });
         }else{
-          addItem(response)
-          Swal.fire({
-            title: "Product added to cart!",
+          if(addItem(response)){
+             Swal.fire({
+                title: "Product added to cart!",
+                timer: 1500,
+                timerProgressBar: true,
+                icon: 'success'
+              })
+          }else{
+            Swal.fire({
+            title: "Adding product to cart failed!",
             timer: 1500,
             timerProgressBar: true,
+            icon: 'error'
           });
+          }
         }
         
       }
@@ -99,24 +127,62 @@ export default function Home(){
     }
 
     function addItem(item){
-      cart.add(item)
-      setProductQuantity(item.quantity)
-      if(item.quantity > item.stock){
+      if(item.quantity < item.stock || item.quantity == undefined){
+        cart.add(item)
+        setShoppingcart(JSON.parse(localStorage.getItem('cart')))
+        return true
+      }else{
         return false
+      }
+    }
+
+    function decreaseItem(item){
+      if(item.quantity <= 1){
+        removeItem(item.id)
+      }else{
+        cart.decrease(item)
+
       }
       setShoppingcart(JSON.parse(localStorage.getItem('cart')))
     }
 
-    function decreaseItem(item){
-      cart.decrease(item)
-      setProductQuantity(item.quantity)
-
-      setShoppingcart(JSON.parse(localStorage.getItem('cart')))
-    }
-
     function removeItem(id){
-      cart.remove(Number(id))
-      setShoppingcart(JSON.parse(localStorage.getItem('cart')))
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      }).then((result) => {
+        // if user confirmed to delete the product
+        if (result.isConfirmed) {
+            cart.remove(id)
+            // find removed product
+            const removedProduct = cart.remove(id).items.find(item => item.id == id)
+            // if removed product is not found
+            // then show the success popup
+            if(removedProduct === undefined) {
+              setShoppingcart(JSON.parse(localStorage.getItem('cart')))
+              Swal.fire({
+                title: "Success",
+                text: "This product deleted from cart!",
+                icon: "success"
+              })
+               // if removed product still found 
+              // show the unsuccess pop up
+              }else{
+                Swal.fire({
+                  title: "Failed",
+                  text: "This product failed to delete from cart, please try again!",
+                  icon: "error"
+                })
+              }
+        }
+      })
+
+
     }
 
 
