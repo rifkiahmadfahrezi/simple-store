@@ -109,7 +109,6 @@ const cart = {
 						})
         			}else{
         				item.quantity--
-        				console.log(item.quantity)
         				item.totalProductPrice = item.price * item.quantity
         				this.totalPrice -= item.price
         				return item

@@ -3,8 +3,11 @@ import Link from './../elements/link/Link'
 import Searchbox from './searchbox/Searchbox'
 import Dropdown from '../Dropdown'
 import {getUser} from '../../utils/user.js'
-import cart from '../../utils/cart.js'
 import Modal from './../Modal'
+import { convertDollar } from '../../utils/tools.js'
+// convert number to text
+import numberToText from 'number-to-text'
+import enUsConverter from 'number-to-text/converters/en-us'
 
 
 export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmitHandler, addItem, decreaseItem, removeItem}){
@@ -30,6 +33,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 	function toggleModal(){
 		modalActive ? setModalActive(false) : setModalActive(true) 
 	}
+
 
 	return(
 	<>
@@ -91,10 +95,14 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 				// console.log(cart)
 				<Modal.Header>
 					<div className="flex items-center justify-between mr-5">
-						<p className="text-lg">
-							<span className="font-bold">Total</span>
-							: ${cartItems.totalPrice == null ? cart.renewTotalPrice(cartItems) : cartItems.totalPrice}
-						</p>
+						<div className="flex flex-col">
+							<p className="text-lg">
+								<span className="font-bold">Total</span>
+								: ${cartItems.totalPrice == null ? convertDollar(cart.renewTotalPrice(cartItems)) : convertDollar(cartItems.totalPrice)}
+								<span className="ml-2">({cartItems.items.length} items)</span>
+							</p>
+							<span className="text-md text-slate-500">({numberToText.convertToText(cartItems.totalPrice, {case: 'lowerCase'})})</span>
+						</div>
 
 						<Link 
 							to="/checkout" 

@@ -71,8 +71,7 @@ export default function Home(){
       }else{
          localStorage.setItem('cart', JSON.stringify(shoppingCart))
       }
-      console.log(shoppingCart)
-        // shoppingCart.items = shoppingCart.items.filter(item => item.id !== undefined)
+      // console.log(shoppingCart)
     }, [shoppingCart])
 
 
