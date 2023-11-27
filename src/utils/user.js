@@ -1,20 +1,32 @@
 const userData = [
 	{
 		id: 1,
+		surName: 'Rifki ahmad fahrezi',
+		address: {
+			country: 'indonesia',
+			fullAdress: 'Jl Idi Adimaja 13, Jawa Barat',
+			city: 'Bandung',
+			state: 'west java',
+			zip: '7107',
+		},
+		email: 'rifki@simplestore.com',
 		username: 'user',
 		password: 'user12345', // min 8 characters
-		type: 'buyer' // type = seller or buyer
+		type: 'buyer' // type = admin or buyer
 	},
 	{
 		id: 2,
-		username: 'seller',
-		password: 'seller12345', // min 8 characters
-		type: 'seller' // type = seller or buyer
+		surName: 'admin',
+		username: 'admin',
+		email: 'admin@simplestore.com',
+		password: 'admin12345', // min 8 characters
+		type: 'admin' // type = admin or buyer
 	}
 ]
 
 export function getUser(id){
-	return userData.filter((data)=> data.id === Number(id))
+	const user = userData.filter((data)=> data.id === Number(id))
+	return user[0]
 }
 
 export default userData
