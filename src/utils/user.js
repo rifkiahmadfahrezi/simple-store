@@ -1,10 +1,10 @@
 const userData = [
 	{
 		id: 1,
-		surName: 'Rifki ahmad fahrezi',
+		fullName: 'Rifki ahmad fahrezi',
 		address: {
 			country: 'indonesia',
-			fullAdress: 'Jl Idi Adimaja 13, Jawa Barat',
+			fullAddress: 'Jl Idi Adimaja 13, Jawa Barat',
 			city: 'Bandung',
 			state: 'west java',
 			zip: '7107',

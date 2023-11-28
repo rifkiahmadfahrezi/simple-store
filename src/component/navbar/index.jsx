@@ -97,7 +97,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 							: 
 							<Dropdown text="Settings">
 								<div className="py-2 text-center">
-									Hello!, {userInfo.surName || 'user'}
+									Hello!, {userInfo.fullName || 'user'}
 								</div>
 								<div className="py-2 text-center cursor-pointer hover:bg-slate-100" onClick={()=>toggleModal('account-setting')}>
 									Account settings
@@ -119,7 +119,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 				<Modal.Body closeModalHandler={toggleModal}>
 					{cartItems.items?.length > 0 ? 
 					// console.log(cart)
-					<Modal.Header>
+					<Modal.Footer>
 						<div className="flex items-center justify-between mr-5">
 							<div className="flex flex-col">
 								<p className="text-lg">
@@ -136,7 +136,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 								onClick={(e)=>checkOutHandler(e)}
 								>Check out</button>
 						</div>
-					</Modal.Header>
+					</Modal.Footer>
 					: null
 					}
 
@@ -209,7 +209,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 						<form action="">
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">name:</Label>
-								<Input value={userInfo.surName} style="bg-slate-50 rounded-md"/>
+								<Input value={userInfo.fullName} style="bg-slate-50 rounded-md"/>
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">username:</Label>
@@ -221,7 +221,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">full address:</Label>
-								<Input value={userInfo.address.fullAdress} style="bg-slate-50 rounded-md"/>
+								<Input value={userInfo.address.fullAddress} style="bg-slate-50 rounded-md"/>
 							</div>
 							<div className="grid grid-cols-3 gap-1">
 								<div className="flex flex-col">
@@ -238,12 +238,13 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 								</div>
 							</div>
 
-							<Modal.Header>
-								<button 
-									className="font-montserrat py-2 px-3 rounded-md bg-indigo-900 mt-3 text-white" 
-									type="submit">
-									Update</button>
-							</Modal.Header>
+
+					<Modal.Footer>
+						<button 
+							className="font-montserrat py-2 px-3 rounded-md bg-indigo-900 mt-3 text-white" 
+							type="submit">
+							Update</button>
+					</Modal.Footer>
 
 						</form>
 					</div>

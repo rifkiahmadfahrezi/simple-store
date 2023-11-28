@@ -37,7 +37,7 @@ export default function LoginPage(){
 
 		const filtered = userData.filter((data) => {	
 			// check if username and password correct
-			return (data.username == username || data.email === username) && data.password == password
+			if ((data.username == username || data.email === username) && data.password == password) return data
 		})
 
 		if (filtered.length <= 0) return setError({isError: true, message: 'Your login information is incorrect, please try again'})
