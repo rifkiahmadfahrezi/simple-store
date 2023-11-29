@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import Input from './../../elements/input/Input'
 import Label from './../../elements/input/Label'
 
-export default function Searchbox({onSubmitHandler}){
+export default function Searchbox(){
 
 	const [searchParams, setSearchParams] = useSearchParams({q: ''})
 	const keyword = searchParams.get('q').toLowerCase() ?? false

@@ -4,7 +4,7 @@ const userData = [
 		fullName: 'Rifki ahmad fahrezi',
 		address: {
 			country: 'indonesia',
-			fullAddress: 'Jl Idi Adimaja 13, Jawa Barat',
+			fullAdress: 'Jl Idi Adimaja 13, Jawa Barat',
 			city: 'Bandung',
 			state: 'west java',
 			zip: '7107',
@@ -16,7 +16,7 @@ const userData = [
 	},
 	{
 		id: 2,
-		surName: 'admin',
+		fullName: 'admin',
 		username: 'admin',
 		email: 'admin@simplestore.com',
 		password: 'admin12345', // min 8 characters

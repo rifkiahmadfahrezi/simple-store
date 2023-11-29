@@ -1,9 +1,11 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useContext} from 'react'
 import {useLoaderData, useParams, useRouteError} from 'react-router-dom'
-import Navbar from '../component/navbar'
+import Navbar, {addItem} from '../component/navbar'
 import Card from '../component/card'
 import ProductDetails from '../component/ProductDetails'
 import product from '../utils/data.js'
+import cart from '../utils/cart.js'
+import { ShoppingCart } from '../context/ShoppingCart'
 
 
 
@@ -11,6 +13,48 @@ export default function Product(){
 	const { productId } = useParams()
 	const { products } = useLoaderData(productId)
 	const [ thumbnail, setThumbnail ] = useState(products.thumbnail)
+	const { cartItems, setCartItems } = useContext(ShoppingCart)
+
+
+    function addToCart(e){
+      e.preventDefault()
+      // get id from clicked btn
+      const productId = e.target.dataset.productid
+
+      // get Product info by ID
+      async function getProductById(data){
+        const response = await data ?? false
+        if(!response){
+          Swal.fire({
+            title: "Adding product to cart failed!",
+            timer: 1500,
+            timerProgressBar: true,
+            icon: 'error'
+          });
+        }else{
+          if(addItem(setCartItems, response)){
+             Swal.fire({
+                title: "Product added to cart!",
+                timer: 1500,
+                timerProgressBar: true,
+                icon: 'success'
+              })
+          }else{
+            Swal.fire({
+            title: "Adding product to cart failed!",
+            timer: 1500,
+            timerProgressBar: true,
+            icon: 'error'
+          });
+          }
+        }
+        
+      }
+
+      getProductById(product.getProduct(Number(productId)))
+      .catch(err => console.error(err))
+    }
+
 
 	function changeThumbnail(e){
 		const clickedImg = e.target.getAttribute('src')
@@ -35,7 +79,14 @@ export default function Product(){
 							)
 						})}
 					</ProductDetails.thumbnail>
-					<ProductDetails.information title={products.title} price={products.price} brand={products.brand} id={products.id} stock={products.stock} description={products.description}/>
+					<ProductDetails.information 
+						title={products.title} 
+						price={products.price} 
+						brand={products.brand} 
+						id={products.id} 
+						stock={products.stock} 
+						description={products.description}
+						addToCartHandler={addToCart}/>
 				</ProductDetails>
 				: 
 			    <div className="container mx-auto min-h-screen w-screen flex justify-center items-center">

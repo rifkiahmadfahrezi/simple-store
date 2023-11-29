@@ -23,7 +23,7 @@ export function thumbnail({src, discount = 0, children}){
 	)
 }
 
-export function information({title, price, description, brand, id, stock}){
+export function information({title, price, description, brand, id, stock ,addToCartHandler}){
 	return (
 		<div className="w-full flex flex-col justify-between items-start mt-4">
 			<div>
@@ -49,7 +49,12 @@ export function information({title, price, description, brand, id, stock}){
 			</div>
 
 			<div className="mb-[140px]">
-				<Link to={id} style="text-center bg-indigo-900 py-2 px-4 text-white font-montserrat rounded-md cursor-pointer"><i className='bx bx-cart'></i> Add to cart</Link>
+				 <button 
+				 	type="button" 
+				 	onClick={e => addToCartHandler(e)} 
+				 	className="py-2 px-5 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700" data-productid={id}>
+                         <i className="bx bx-cart"></i> Add to cart
+                        </button>
 			</div>
 		</div>
 

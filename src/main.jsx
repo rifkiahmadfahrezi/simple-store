@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Product, {loader} from './pages/Product'
 import LoginPage from './pages/LoginPage'
 import ErrorPage from './pages/ErrorPage'
+import ShoppingCartContextProvider from './context/ShoppingCart'
 
 
 
@@ -28,6 +29,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router}/>
+    <ShoppingCartContextProvider>
+      <RouterProvider router={router}/>
+    </ShoppingCartContextProvider>
   </React.StrictMode>
 )

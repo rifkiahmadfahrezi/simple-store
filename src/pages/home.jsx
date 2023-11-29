@@ -1,11 +1,12 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useContext} from 'react'
 import {useLoaderData, useSearchParams} from 'react-router-dom'
-import Navbar from '../component/navbar'
+import Navbar, { addItem } from '../component/navbar'
 import Card from '../component/card'
 import product from '../utils/data.js'
 import Dropdown from '../component/dropdown'
 import Skeleton from '../component/skeleton'
 import cart from '../utils/cart.js'
+import { ShoppingCart } from '../context/ShoppingCart'
 
 export default function Home(){
 
@@ -15,9 +16,9 @@ export default function Home(){
     const [selectedCategory, setSelectedCategory] = useState("select category")
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q').toLowerCase()
-    const [shoppingCart, setShoppingcart] = useState(JSON.parse(localStorage.getItem('cart')) ?? {items: [], totalPrice: 0})
-    const [ productQuantity, setProductQuantity ] = useState(0)
+    // const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem('cart')) ?? {items: [], totalPrice: 0})
 
+    const { cartItems, setCartItems } = useContext(ShoppingCart)
 
     useEffect(()=> {
       getProducts(product.getAllProducts())
@@ -27,11 +28,11 @@ export default function Home(){
         Swal.fire({
           title: 'Someting went wrong :(',
           text: 'Fail to get products data from server, please wait!',
-          timer: 1500,
+          timer: 2500,
           timerProgressBar: true,
         })
 
-        setTimeout(()=> location.reload(), 1500)
+        setTimeout(()=> location.reload(), 2500)
       }) 
 
       async function getCategories(data){
@@ -48,31 +49,13 @@ export default function Home(){
         Swal.fire({
           title: 'Someting went wrong :(',
           text: 'Fail to get product categories data from server, please wait!',
-          timer: 1500,
+          timer: 2500,
           timerProgressBar: true,
         })
 
-        setTimeout(()=> location.reload(), 1500)
+        setTimeout(()=> location.reload(), 2500)
       }) 
-      
-
-      const items = JSON.parse(localStorage.getItem('cart'));
-      if (items) {
-       setShoppingcart(items);
-      }
     },[])
-
-
-    useEffect(()=> {
-      if (shoppingCart.length > 1){
-        const cartItems = shoppingCart.filter((item) => item.id != undefined) 
-        console.log(cartItems)
-         localStorage.setItem('cart', JSON.stringify(cartItems))
-      }else{
-         localStorage.setItem('cart', JSON.stringify(shoppingCart))
-      }
-      // console.log(shoppingCart)
-    }, [shoppingCart])
 
 
     async function getProductByCategory(category){
@@ -102,7 +85,7 @@ export default function Home(){
             icon: 'error'
           });
         }else{
-          if(addItem(response)){
+          if(addItem(setCartItems, response)){
              Swal.fire({
                 title: "Product added to cart!",
                 timer: 1500,
@@ -125,73 +108,10 @@ export default function Home(){
       .catch(err => console.error(err))
     }
 
-    function addItem(item){
-      if(item.quantity < item.stock || item.quantity == undefined){
-        cart.add(item)
-        setShoppingcart(JSON.parse(localStorage.getItem('cart')))
-        return true
-      }else{
-        return false
-      }
-    }
-
-    function decreaseItem(item){
-      if(item.quantity <= 1){
-        removeItem(item.id)
-      }else{
-        cart.decrease(item)
-
-      }
-      setShoppingcart(JSON.parse(localStorage.getItem('cart')))
-    }
-
-    function removeItem(id){
-      Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!"
-      }).then((result) => {
-        // if user confirmed to delete the product
-        if (result.isConfirmed) {
-            cart.remove(id)
-            // find removed product
-            const removedProduct = cart.remove(id).items.find(item => item.id == id)
-            // if removed product is not found
-            // then show the success popup
-            if(removedProduct === undefined) {
-              setShoppingcart(JSON.parse(localStorage.getItem('cart')))
-              Swal.fire({
-                title: "Success",
-                text: "This product deleted from cart!",
-                icon: "success"
-              })
-               // if removed product still found 
-              // show the unsuccess pop up
-              }else{
-                Swal.fire({
-                  title: "Failed",
-                  text: "This product failed to delete from cart, please try again!",
-                  icon: "error"
-                })
-              }
-        }
-      })
-
-
-    }
-
 
     return(
       <>
-        <Navbar 
-          cartItems={shoppingCart} 
-          addItem={addItem} 
-          decreaseItem={decreaseItem} 
-          removeItem={removeItem}/>
+        <Navbar />
 
         <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center justify-between">

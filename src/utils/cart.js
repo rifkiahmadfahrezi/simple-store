@@ -17,7 +17,6 @@ const cart = {
 	add: function (productInfo) {
 		if (productInfo === undefined) return this.items
 
-
 		const cartItem = {
           id: productInfo.id,
           title: productInfo.title,
@@ -28,10 +27,8 @@ const cart = {
 
         const cartProduct = this.items.find(item => item.id === cartItem.id)
         if(!cartProduct){
-        	console.log('ok')
         	this.items.push({...cartItem, quantity: 1, totalProductPrice: cartItem.price})
         	this.totalPrice += cartItem.price
-        	console.log(this)
         }else{
         	this.items = this.items.filter(item => {
         		if(item.id != cartItem.id) return item
@@ -144,62 +141,6 @@ const cart = {
 			}))
 		}
 		return this
-    	
-
-	// let isRemoved = false
-	// 	// show confirm popup
-	// 	Swal.fire({
-	// 	  title: "Are you sure?",
-	// 	  text: "You won't be able to revert this!",
-	// 	  icon: "warning",
-	// 	  showCancelButton: true,
-	// 	  confirmButtonColor: "#3085d6",
-	// 	  cancelButtonColor: "#d33",
-	// 	  confirmButtonText: "Yes, delete it!"
-	// 	}).then((result) => {
-	// 		// if user confirmed to delete the product
-	// 	  if (result.isConfirmed) {
-	// 	  	this.items = this.items.filter(item => {
-	// 			if (item.id == id) {
-	// 				item.quantity = 0
-	// 				this.totalPrice -= item.totalProductPrice
-	// 			}
-	// 			return item.id != id
-    //     	})
-
-	// 	  	// find removed product
-    //     	const removedProduct = this.items.find(item => item.id == id)
-    //     	// if removed product is not found
-    //     	// then show the success popup
-    //     	if(removedProduct === undefined) {
-    //     		isRemoved = true
-
-    //     		Swal.fire({
-	// 			  title: "Success",
-	// 			  text: "This product deleted from cart!",
-	// 			  icon: "success"
-	// 			})
-	// 			// if removed product still found 
-	//         	// show the unsuccess pop up
-	//         	}else{
-	//         		isRemoved = false
-
-	//         		Swal.fire({
-	// 				  title: "Failed",
-	// 				  text: "This product failed to delete from cart, please try again!",
-	// 				  icon: "error"
-	// 				})
-	//         	}
-
-	//         	localStorage.setItem('cart', JSON.stringify({
-	// 				items: this.items,
-	// 				totalPrice: this.totalPrice
-	// 			}))
-	//         console.log(isRemoved)
-	//         return isRemoved
-	// 	  }
-	// 	})
-
 	},
 	renewTotalPrice: function(shoppingCart){
 		shoppingCart.items.forEach((item) => {

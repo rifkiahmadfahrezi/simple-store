@@ -1,34 +1,44 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import Link from './../elements/link/Link'
 import Input from './../elements/input/Input'
 import Label from './../elements/input/Label'
 import Searchbox from './searchbox/Searchbox'
 import Dropdown from '../Dropdown'
 import {getUser} from '../../utils/user.js'
-import Modal from './../Modal'
+import cart from '../../utils/cart.js'
+import Modal from '../Modal'
 import { convertDollar } from '../../utils/tools.js'
 // convert number to text
 import numberToText from 'number-to-text'
-import enUsConverter from 'number-to-text/converters/en-us'
+import {enUsConverter} from 'number-to-text/converters/en-us'
+import { ShoppingCart } from  '../../context/ShoppingCart'
 
-
-export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmitHandler, addItem, decreaseItem, removeItem}){
+export default function Navbar(){
 
 	// json.parse for change string to boolean
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')) ?? false)
 	const [ userInfo, setUserInfo ] = useState({})
 	const userId = sessionStorage.getItem('userId')
     const [ modal, setModal ] = useState({isActive: false, target: null})
+    const { cartItems, setCartItems } = useContext(ShoppingCart)
+
 
 	useEffect(() => {
 		if (cartItems == null) cartItems = {items: [], totalPrice: 0}
 		setUserInfo(getUser(userId))
+		console.log(cartItems)
 	}, [])
 
 	useEffect(()=> {
-		console.log(isLogin)
-		console.log(userInfo)
-	},[userInfo])
+      if (cartItems.length > 1){
+        const items = cartItems.filter((item) => item.id != undefined) 
+         localStorage.setItem('cart', JSON.stringify(items))
+      }else{
+         localStorage.setItem('cart', JSON.stringify(cartItems))
+      }
+      // console.log(cartItems)
+    }, [cartItems])
+
 
 	function doLogout(e){
 		e.preventDefault()
@@ -59,6 +69,55 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 
 	}
 
+    function decreaseItem(item){
+      if(item.quantity <= 1){
+        removeItem(item.id)
+      }else{
+        cart.decrease(item)
+
+      }
+      setCartItems(JSON.parse(localStorage.getItem('cart')))
+    }
+
+    function removeItem(id){
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      }).then((result) => {
+        // if user confirmed to delete the product
+        if (result.isConfirmed) {
+            cart.remove(id)
+            // find removed product
+            const removedProduct = cart.remove(id).items.find(item => item.id == id)
+            // if removed product is not found
+            // then show the success popup
+            if(removedProduct === undefined) {
+              setCartItems(JSON.parse(localStorage.getItem('cart')))
+              Swal.fire({
+                title: "Success",
+                text: "This product deleted from cart!",
+                icon: "success"
+              })
+               // if removed product still found 
+              // show the unsuccess pop up
+              }else{
+                Swal.fire({
+                  title: "Failed",
+                  text: "This product failed to delete from cart, please try again!",
+                  icon: "error"
+                })
+              }
+        }
+      })
+
+
+    }
+
 
 	return(
 	<>
@@ -70,7 +129,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 				</Link>
 
 				<div className="flex items-center gap-[15px]">
-					<Searchbox onSubmitHandler={onSubmitHandler}/>
+					<Searchbox/>
 
 					<div className="relative">
 						<button 
@@ -97,7 +156,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 							: 
 							<Dropdown text="Settings">
 								<div className="py-2 text-center">
-									Hello!, {userInfo.fullName || 'user'}
+									Hello!, {userInfo.surName || 'user'}
 								</div>
 								<div className="py-2 text-center cursor-pointer hover:bg-slate-100" onClick={()=>toggleModal('account-setting')}>
 									Account settings
@@ -120,6 +179,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 					{cartItems.items?.length > 0 ? 
 					// console.log(cart)
 					<Modal.Footer>
+						{console.log(cartItems)}
 						<div className="flex items-center justify-between mr-5">
 							<div className="flex flex-col">
 								<p className="text-lg">
@@ -137,7 +197,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 								>Check out</button>
 						</div>
 					</Modal.Footer>
-					: null
+					: console.log("cart is empty")
 					}
 
 					<div className="p-3">
@@ -156,7 +216,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 												<div>
 													<h4 className="font-semibold">{item.title}</h4>
 													<h6 className="font-reguler">
-														${item.price} &times; {item.quantity} = ${item.totalProductPrice}</h6>
+														${convertDollar(item.price)} &times; {item.quantity} = ${convertDollar(item.totalProductPrice)}</h6>
 												</div>
 
 												<form onSubmit={e=> e.preventDefault()} className="flex rounded-sm">
@@ -175,7 +235,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 													<button 
 														type="button"
 														className="bg-indigo-50 py-1 px-2"
-														onClick={()=> addItem(item)}>
+														onClick={()=> addItem(setCartItems, item)}>
 														<i className='bx bx-plus'></i>
 													</button>
 												</form>
@@ -209,7 +269,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 						<form action="">
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">name:</Label>
-								<Input value={userInfo.fullName} style="bg-slate-50 rounded-md"/>
+								<Input value={userInfo.surName} style="bg-slate-50 rounded-md"/>
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">username:</Label>
@@ -221,7 +281,7 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">full address:</Label>
-								<Input value={userInfo.address.fullAddress} style="bg-slate-50 rounded-md"/>
+								<Input value={userInfo.address.fullAdress} style="bg-slate-50 rounded-md"/>
 							</div>
 							<div className="grid grid-cols-3 gap-1">
 								<div className="flex flex-col">
@@ -238,13 +298,12 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 								</div>
 							</div>
 
-
-					<Modal.Footer>
-						<button 
-							className="font-montserrat py-2 px-3 rounded-md bg-indigo-900 mt-3 text-white" 
-							type="submit">
-							Update</button>
-					</Modal.Footer>
+							<Modal.Header>
+								<button 
+									className="font-montserrat py-2 px-3 rounded-md bg-indigo-900 mt-3 text-white" 
+									type="submit">
+									Update</button>
+							</Modal.Header>
 
 						</form>
 					</div>
@@ -254,4 +313,14 @@ export default function Navbar({cartItems = {items: [], totalPrice: 0}, onSubmit
 
 	</>
 	)
+}
+
+export function addItem(setItemHook, item){
+  if(item.quantity < item.stock || item.quantity == undefined){
+    cart.add(item)
+    setItemHook(JSON.parse(localStorage.getItem('cart')))
+    return true
+  }else{
+    return false
+  }
 }
