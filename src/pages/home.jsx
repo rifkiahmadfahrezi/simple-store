@@ -12,10 +12,11 @@ export default function Home(){
 
     const [categories, setCategories] = useState([])
     const [productsData, setProductsData] = useState([])
-    const [error, setError] = useState({isError: false, message: ''})
+    const [error, setError] = useState({isError: false, message: '', img: null})
     const [selectedCategory, setSelectedCategory] = useState("select category")
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q').toLowerCase()
+    const [ isProductFound, setIsProductFound] = useState(true)
     // const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem('cart')) ?? {items: [], totalPrice: 0})
 
     const { cartItems, setCartItems } = useContext(ShoppingCart)
@@ -121,6 +122,7 @@ export default function Home(){
             {(keyword === null || keyword != '')
               ? <button 
                   onClick={()=> {
+                    
                     setSearchParams(prev => {
                       prev.set('q', '')
                       return prev
@@ -139,17 +141,29 @@ export default function Home(){
         </div>
 
         {!error.isError ?
-        <div className="grid container mx-auto w-[90%] sm:w-full mt-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid container mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
 
             {productsData.products?.length > 0 ?
-              productsData.products.filter((item) => {
+              productsData.products.filter((item,index,arr) => {
                 if(keyword !== null || keyword != '') {
-                  return item.title.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword) 
+                  const filteredItems = item.title.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword)
+                  if(!filteredItems){
+                    console.log('product not found')
+                    // setError({
+                    //   isError: true, 
+                    //   message: `Product '${keyword}' not found`,
+                    //   img: 'product-not-found.svg'
+                    // })
+                  }else{
+                    // setError({isError: false, message: '', img:null})
+                    return filteredItems
+                  }
                 }else{
-                  return productsData.products
+                  // setError({isError: false, message: '', img:null})
+                  return arr
                 }
-              })?.map(item => {
-                
+
+              })?.map((item, index, arr) => {
                 return (
                   <Card key={item.id} to={`/product/${item.id}`} style={`cursor-pointer hover:shadow-2xl shadow-md transition duration-300`} discount={item.discountPercentage}>
                     <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
@@ -171,7 +185,10 @@ export default function Home(){
             }
 
         </div>
-          : <div className="container mx-auto w-[90%] sm:w-full mt-8"><p>{error.message}</p></div>
+          : <div className="container mx-auto text-center  w-[90%] sm:w-full mt-8">
+            {error.img !== null && <img width="350px" className="mx-auto object-contain mb-4" src={`/img/${error.img}`} alt="image error"/>}
+            <p className="text-[30px] font-montserrat text-indigo-900">{error.message}</p>
+          </div>
         }
 
 
