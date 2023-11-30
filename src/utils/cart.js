@@ -1,4 +1,6 @@
 import product from './data.js'
+import { getDiscountedPrice } from './tools.js'
+
 
 function getCartItems() {
 	return JSON.parse(localStorage.getItem('cart')) !== null 
@@ -21,7 +23,9 @@ const cart = {
           id: productInfo.id,
           title: productInfo.title,
           img: productInfo.thumbnail,
-          price: productInfo.price,
+          discountPercentage: productInfo.discountPercentage ?? 0,
+          actualPrice: productInfo.price,
+          price: getDiscountedPrice(productInfo.discountPercentage, productInfo.price) ?? productInfo.price, // after discounted
           stock: productInfo.stock
         }
 
@@ -30,12 +34,9 @@ const cart = {
         	this.items.push({...cartItem, quantity: 1, totalProductPrice: cartItem.price})
         	this.totalPrice += cartItem.price
         }else{
-        	this.items = this.items.filter(item => {
+        	this.items = this.items.filter((item, index, arr) => {
         		if(item.id != cartItem.id) return item
 
-        		if(item.quantity >= item.stock){
-        			item.quantity = item.stock
-        		}
 
         		// get product thumbnail if img is undefined
     			if(item.img == undefined || item.img == null){
@@ -47,10 +48,17 @@ const cart = {
 					getThumbnail(product.getThumbnail(productInfo.id))
 					.catch((err) => console.log(err))
     			}
-
         		item.quantity++
+        		if(item.quantity >= item.stock){
+        			item.quantity = item.stock
+        		}else{
+        			console.log('ok')
+					this.totalPrice += item.price
+        		}
+        		console.log(item.quantity, item.price, this.totalPrice)
     			item.totalProductPrice = item.price * item.quantity
-				this.totalPrice += item.price
+        		this.totalPrice = this.renewTotalPrice(this)
+        		console.log(this.totalPrice)
 				return item
   
         	})
@@ -72,7 +80,7 @@ const cart = {
 		const cartProduct = this.items.find(item => item.id === productInfo.id)
 
 		if(cartProduct){
-			this.items = this.items.map(item => {
+			this.items = this.items.map((item) => {
         		if(item.id == productInfo.id){
         			// get product thumbnail if img is undefined
         			if(item.img == undefined || item.img == null){
@@ -121,7 +129,6 @@ const cart = {
 			items: this.items,
 			totalPrice: this.totalPrice
 		}))
-
 	},
 	remove: function(id){
 		this.items = this.items.filter(item => {
@@ -135,6 +142,7 @@ const cart = {
 		const removedProduct = this.items.find(item => item.id == id)
 
 		if (removedProduct === undefined) {
+			this.totalPrice = 0
 			localStorage.setItem('cart', JSON.stringify({
 				items: this.items,
 				totalPrice: this.totalPrice
@@ -143,14 +151,19 @@ const cart = {
 		return this
 	},
 	renewTotalPrice: function(shoppingCart){
+		shoppingCart.totalPrice = 0
 		shoppingCart.items.forEach((item) => {
-			shoppingCart.totalPrice += item.totaProductPrice
+			shoppingCart.totalPrice += item.totalProductPrice
 		})
+
+		this.totalPrice = shoppingCart.totalPrice
 
 		localStorage.setItem('cart', JSON.stringify({
 			items: this.items,
 			totalPrice: shoppingCart.totalPrice
 		}))
+
+		return shoppingCart.totalPrice
 
 	}
 }
