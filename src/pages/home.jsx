@@ -1,12 +1,13 @@
 import React, {useState, useEffect, useContext} from 'react'
 import {useLoaderData, useSearchParams} from 'react-router-dom'
-import Navbar, { addItem } from '../component/navbar'
+import Navbar from '../component/navbar'
 import Card from '../component/card'
 import product from '../utils/data.js'
 import Dropdown from '../component/dropdown'
 import Skeleton from '../component/skeleton'
 import cart from '../utils/cart.js'
-import { ShoppingCart } from '../context/ShoppingCart'
+import { getDiscountedPrice } from '../utils/tools.js'
+import { ShoppingCart, addItem, decreaseItem,removeItem } from  '../context/ShoppingCart'
 
 export default function Home(){
 
@@ -17,7 +18,6 @@ export default function Home(){
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q').toLowerCase()
     const [ isProductFound, setIsProductFound] = useState(true)
-    // const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem('cart')) ?? {items: [], totalPrice: 0})
 
     const { cartItems, setCartItems } = useContext(ShoppingCart)
 
@@ -40,7 +40,8 @@ export default function Home(){
         setCategories(await data)
       }
       async function getProducts(data){
-        setProductsData(await data)
+        const response = await data
+        setProductsData(response.products)
       }
 
       // get all product categories
@@ -87,12 +88,26 @@ export default function Home(){
           });
         }else{
           if(addItem(setCartItems, response)){
-             Swal.fire({
+            const existCartItem = cartItems.items.find(item => item.id == response.id)
+
+            if (!existCartItem){
+              Swal.fire({
                 title: "Product added to cart!",
                 timer: 1500,
                 timerProgressBar: true,
                 icon: 'success'
-              })
+              }) 
+            }else{
+              if(existCartItem?.quantity >= response.stock){
+                Swal.fire({
+                  title: "Maximum quantity!",
+                  text: `You can't have more quantity than product stock`,
+                  timer: 3500,
+                  timerProgressBar: true,
+                  icon: 'error'
+                })
+              }
+            }
           }else{
             Swal.fire({
             title: "Adding product to cart failed!",
@@ -143,32 +158,24 @@ export default function Home(){
         {!error.isError ?
         <div className="grid container mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
 
-            {productsData.products?.length > 0 ?
-              productsData.products.filter((item,index,arr) => {
+            {productsData?.length > 0 ?
+              productsData.filter((item,index,arr) => {
                 if(keyword !== null || keyword != '') {
-                  const filteredItems = item.title.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword)
-                  if(!filteredItems){
-                    console.log('product not found')
-                    // setError({
-                    //   isError: true, 
-                    //   message: `Product '${keyword}' not found`,
-                    //   img: 'product-not-found.svg'
-                    // })
-                  }else{
-                    // setError({isError: false, message: '', img:null})
-                    return filteredItems
-                  }
+                  return item.title.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword)
                 }else{
-                  // setError({isError: false, message: '', img:null})
                   return arr
                 }
-
               })?.map((item, index, arr) => {
                 return (
                   <Card key={item.id} to={`/product/${item.id}`} style={`cursor-pointer hover:shadow-2xl shadow-md transition duration-300`} discount={item.discountPercentage}>
                     <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
                     <Card.body>
-                        <p className="font-semibold mb-1 text-xl text-indigo-900">${item.price}</p>
+                        <p 
+                          className="font-semibold mb-1">
+                          <span className="text-2xl text-indigo-900 mr-1">
+                          ${getDiscountedPrice(item.discountPercentage,item.price)}</span>
+                          <span className="line-through text-md text-indigo-300">${item.price}</span>
+                        </p>
                         <h4>{item.title}</h4>
                         <h5 className="font-semibold"><i className='text-indigo-900 bx bxs-check-circle'></i>{item.brand}</h5>
                         <span className="mt-1"><i className='bx bxs-star text-yellow-400 text-xl'></i> {item.rating}</span>

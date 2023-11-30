@@ -14,7 +14,7 @@ export function thumbnail({src, discount = 0, children}){
 		<div className="flex flex-col w-full">
 			<div className="relative overflow-hidden">
 				{discount > 0 && <span className="absolute top-0 right-0 bg-indigo-600 p-3 text-white text-sm">- {discount}%</span>}
-				<img src={src} className="rounded-md max-h-[400px] object-contain" width="100%" alt="ok"/>
+				<img src={src} className="rounded-md h-[400px] object-contain" width="100%" alt="ok"/>
 			</div>
 			<div className="flex justify-start items-center gap-[10px] mt-5 h-[100px]">
 				{children}

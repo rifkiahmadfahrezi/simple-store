@@ -7,11 +7,11 @@ import Dropdown from '../Dropdown'
 import {getUser} from '../../utils/user.js'
 import cart from '../../utils/cart.js'
 import Modal from '../Modal'
-import { convertDollar } from '../../utils/tools.js'
+import { convertDollar, getDiscountedPrice } from '../../utils/tools.js'
 // convert number to text
 import numberToText from 'number-to-text'
 import {enUsConverter} from 'number-to-text/converters/en-us'
-import { ShoppingCart } from  '../../context/ShoppingCart'
+import { ShoppingCart, addItem, decreaseItem,removeItem } from  '../../context/ShoppingCart'
 
 export default function Navbar(){
 
@@ -24,21 +24,8 @@ export default function Navbar(){
 
 
 	useEffect(() => {
-		if (cartItems == null) cartItems = {items: [], totalPrice: 0}
 		setUserInfo(getUser(userId))
-		console.log(cartItems)
 	}, [])
-
-	useEffect(()=> {
-      if (cartItems.length > 1){
-        const items = cartItems.filter((item) => item.id != undefined) 
-         localStorage.setItem('cart', JSON.stringify(items))
-      }else{
-         localStorage.setItem('cart', JSON.stringify(cartItems))
-      }
-      // console.log(cartItems)
-    }, [cartItems])
-
 
 	function doLogout(e){
 		e.preventDefault()
@@ -69,54 +56,6 @@ export default function Navbar(){
 
 	}
 
-    function decreaseItem(item){
-      if(item.quantity <= 1){
-        removeItem(item.id)
-      }else{
-        cart.decrease(item)
-
-      }
-      setCartItems(JSON.parse(localStorage.getItem('cart')))
-    }
-
-    function removeItem(id){
-      Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!"
-      }).then((result) => {
-        // if user confirmed to delete the product
-        if (result.isConfirmed) {
-            cart.remove(id)
-            // find removed product
-            const removedProduct = cart.remove(id).items.find(item => item.id == id)
-            // if removed product is not found
-            // then show the success popup
-            if(removedProduct === undefined) {
-              setCartItems(JSON.parse(localStorage.getItem('cart')))
-              Swal.fire({
-                title: "Success",
-                text: "This product deleted from cart!",
-                icon: "success"
-              })
-               // if removed product still found 
-              // show the unsuccess pop up
-              }else{
-                Swal.fire({
-                  title: "Failed",
-                  text: "This product failed to delete from cart, please try again!",
-                  icon: "error"
-                })
-              }
-        }
-      })
-
-
-    }
 
 
 	return(
@@ -184,7 +123,7 @@ export default function Navbar(){
 							<div className="flex flex-col">
 								<p className="text-lg">
 									<span className="font-bold">Total</span>
-									: ${cartItems.totalPrice == null ? convertDollar(cart.renewTotalPrice(cartItems)) : convertDollar(cartItems.totalPrice)}
+									: ${(cartItems.totalPrice == null || cartItems.totalPrice == NaN) ? convertDollar(cart.renewTotalPrice(cartItems)) : convertDollar(cartItems.totalPrice)}
 									<span className="ml-2">({cartItems.items.length} items)</span>
 								</p>
 								<span className="text-md text-slate-500">({numberToText.convertToText(cartItems.totalPrice, {case: 'lowerCase'})})</span>
@@ -206,16 +145,29 @@ export default function Navbar(){
 								return (
 									<div key={`${item.id}-${index}`} className="flex gap-3 border-b-2 border-indigo-900 py-2 mb-2 items-center justify-between">
 										<div className="flex">
-											<figure>
+											<figure className="relative">
 												<img 
 												src={item.img} 
 												alt="image of products"
 												className="object-contain w-[100px] h-[100px]"/>
+											{(item.discountPercentage != undefined || item.discountPercentage <= 0 || item.discountPercentage != null )
+											? <span 
+												className="bg-indigo-500 p-1 absolute top-0 right-0 text-white font-montserrat text-sm rounded-sm">
+												- {item.discountPercentage}%
+												</span>
+											: null
+											}
 											</figure>
 											<figcaption className="flex flex-col ml-2 justify-between">
 												<div>
 													<h4 className="font-semibold">{item.title}</h4>
-													<h6 className="font-reguler">
+													<p className={`${item.quantity >= item.stock ? 'text-red-400' : 'text-indigo-800'}`}>
+														Stock: {item.stock}</p>
+													<h6 className="font-reguler font-montserrat">
+														<span className="
+														text-lg line-through text-indigo-300 mr-1">
+															${convertDollar(item.actualPrice)}
+															</span>
 														${convertDollar(item.price)} &times; {item.quantity} = ${convertDollar(item.totalProductPrice)}</h6>
 												</div>
 
@@ -223,7 +175,7 @@ export default function Navbar(){
 													<button 
 														type="button"
 														className="bg-indigo-50 py-1 px-2"
-														onClick={()=> decreaseItem(item)} >
+														onClick={()=> decreaseItem(setCartItems,item)} >
 														<i className='bx bx-minus'></i>
 													</button>
 													<input 
@@ -246,7 +198,7 @@ export default function Navbar(){
 												type="button" 
 												className="text-red-500 p-2 rounded-sm text-2xl hover:bg-red-50"
 												onClick={()=> {
-													removeItem(item.id)
+													removeItem(setCartItems,item.id)
 												}}>
 												<i className='bx bx-trash'></i>
 											</button>
@@ -313,14 +265,4 @@ export default function Navbar(){
 
 	</>
 	)
-}
-
-export function addItem(setItemHook, item){
-  if(item.quantity < item.stock || item.quantity == undefined){
-    cart.add(item)
-    setItemHook(JSON.parse(localStorage.getItem('cart')))
-    return true
-  }else{
-    return false
-  }
 }
