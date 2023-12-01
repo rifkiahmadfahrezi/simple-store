@@ -2,6 +2,7 @@ import React, {useState, useEffect, useContext} from 'react'
 import {useLoaderData, useSearchParams} from 'react-router-dom'
 import Navbar from '../component/navbar'
 import Card from '../component/card'
+import Footer from '../component/footer'
 import product from '../utils/data.js'
 import Dropdown from '../component/dropdown'
 import Skeleton from '../component/skeleton'
@@ -14,27 +15,47 @@ export default function Home(){
     const [categories, setCategories] = useState([])
     const [productsData, setProductsData] = useState([])
     const [error, setError] = useState({isError: false, message: '', img: null})
-    const [selectedCategory, setSelectedCategory] = useState("select category")
+    const [selectedCategory, setSelectedCategory] = useState( "select category")
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q').toLowerCase()
+    const categoryParams = searchParams.get('category')
     const [ isProductFound, setIsProductFound] = useState(true)
+    const [ isCategoryExist, setIsCategoryExist ] = useState(false)
 
     const { cartItems, setCartItems } = useContext(ShoppingCart)
 
+    useEffect(()=>{
+      const categoryExist = categories.find(category => category === categoryParams) ?? false
+      !categoryExist ? setIsCategoryExist(false) : setIsCategoryExist(true)
+    },[categories])
+
+
     useEffect(()=> {
-      getProducts(product.getAllProducts())
-      .catch(error => {
-        console.error(error)
+      async function getProducts(data){
+        const response = await data
+        setProductsData(response.products)
+      }
+      if (isCategoryExist){
+        setSelectedCategory(categoryParams)
+        getProductByCategory(categoryParams)
+      }else{
+        getProducts(product.getAllProducts())
+        .catch(error => {
+          console.error(error)
 
-        Swal.fire({
-          title: 'Someting went wrong :(',
-          text: 'Fail to get products data from server, please wait!',
-          timer: 2500,
-          timerProgressBar: true,
+          Swal.fire({
+            title: 'Someting went wrong :(',
+            text: 'Fail to get products data from server, please wait!',
+            timer: 2500,
+            timerProgressBar: true,
+          })
+
+          setTimeout(()=> location.reload(), 2500)
         })
+      }
+    }, [isCategoryExist])
 
-        setTimeout(()=> location.reload(), 2500)
-      }) 
+    useEffect(()=> {
 
       async function getCategories(data){
         setCategories(await data)
@@ -57,18 +78,80 @@ export default function Home(){
 
         setTimeout(()=> location.reload(), 2500)
       }) 
+
+      if(categoryParams === null || categoryParams == '' || categoryParams === 'all') {
+        getProducts(product.getAllProducts())
+        .catch(error => {
+          console.error(error)
+
+          Swal.fire({
+            title: 'Someting went wrong :(',
+            text: 'Fail to get products data from server, please wait!',
+            timer: 2500,
+            timerProgressBar: true,
+          })
+
+          setTimeout(()=> location.reload(), 2500)
+        })
+      }
     },[])
 
 
-    async function getProductByCategory(category){
+    function getProductByCategory(category){
       setProductsData([])
-      setProductsData(await product.getProductByCategory(category))
+      async function getProducts(data){
+        const response = await data
+        setProductsData(response.products)
+      }
+      getProducts(product.getProductByCategory(category))
+      .catch((error) => {
+        console.error(error)
+        Swal.fire({
+          title: 'Someting went wrong :(',
+          text: 'Fail to get products data from server, please wait!',
+          timer: 2500,
+          timerProgressBar: true,
+        })
+
+        setTimeout(()=> location.reload(), 2500)
+      })
     }
 
     function dropdownItemClickHandler(e){
       const category = e.target.dataset.category
+
+      const categoryExist = categories.find(ctgry => ctgry === category) ?? false
+      console.log(categoryExist)
+      !categoryExist ? setIsCategoryExist(false) : setIsCategoryExist(true)
+
+      setSearchParams(prev => {
+        prev.set('category', category)
+        return prev
+      },{ replace: true})
+
       setSelectedCategory(category)
-      getProductByCategory(category)
+
+      async function getProducts(data){
+        const response = await data
+        setProductsData(response.products)
+      }
+
+      if ( category !== 'all' ){
+         getProductByCategory(category)
+      }else{
+        getProducts(product.getAllProducts(category))
+        .catch((error) => {
+          console.error(error)
+          Swal.fire({
+            title: 'Someting went wrong :(',
+            text: 'Fail to get products data from server, please wait!',
+            timer: 2500,
+            timerProgressBar: true,
+          })
+
+          setTimeout(()=> location.reload(), 2500)
+        })
+      } 
     }
 
     function addToCart(e){
@@ -130,8 +213,8 @@ export default function Home(){
         <Navbar />
 
         <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold font-montserrat capitalize text-indigo-900"
+          <div className="flex items-center gap-2 justify-between">
+            <h2 className="font-semibold font-montserrat capitalize text-indigo-900"
             >our products</h2>
 
             {(keyword === null || keyword != '')
@@ -143,20 +226,30 @@ export default function Home(){
                       return prev
                     },{ replace: true})
                   }}
-                  className="py-1 px-2 font-montserrat capitalize bg-indigo-50 rounded-md flex items-center">
+                  className="py-1 px-2 text-sm font-montserrat capitalize bg-indigo-50 rounded-md flex items-center">
                   show all products <i className='ml-2 bx bx-refresh'></i>
                 </button>
               : null
             }
 
-            <Dropdown text={selectedCategory.split('-').join(' ')}>
-              {categories.sort()?.map((item, i) => <span key={i} data-category={item} className="text-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-slate-200 capitalize" onClick={(e)=> dropdownItemClickHandler(e)}>{item.split('-').join(' ')}</span>)}
+            <Dropdown 
+                text={selectedCategory !== "all" ? selectedCategory.split('-').join(' ') : "Select category"}>
+                  <span data-category="all" className="text-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-slate-200 capitalize" onClick={(e)=> dropdownItemClickHandler(e)}>All</span>
+              {categories.sort()?.map((item, i) => {
+                return (
+                  <span key={i} data-category={item} className="text-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-slate-200 capitalize" onClick={(e)=> dropdownItemClickHandler(e)}>{item.split('-').join(' ')}</span>
+                )
+              })}
             </Dropdown>
           </div>
         </div>
 
+
+        {!isCategoryExist ? <p className="text-lg my-5 text-center font-montserrat text-indigo-900">{`Category '${categoryParams}' is not exist, please select the correct category!`}</p> : null}
+
         {!error.isError ?
-        <div className="grid container mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid min-h-screen container mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+
 
             {productsData?.length > 0 ?
               productsData.filter((item,index,arr) => {
@@ -197,6 +290,8 @@ export default function Home(){
             <p className="text-[30px] font-montserrat text-indigo-900">{error.message}</p>
           </div>
         }
+
+        <Footer/>
 
 
       </>

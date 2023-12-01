@@ -118,12 +118,11 @@ export default function Navbar(){
 					{cartItems.items?.length > 0 ? 
 					// console.log(cart)
 					<Modal.Footer>
-						{console.log(cartItems)}
 						<div className="flex items-center justify-between mr-5">
 							<div className="flex flex-col">
 								<p className="text-lg">
 									<span className="font-bold">Total</span>
-									: ${(cartItems.totalPrice == null || cartItems.totalPrice == NaN) ? convertDollar(cart.renewTotalPrice(cartItems)) : convertDollar(cartItems.totalPrice)}
+									: ${(cartItems.totalPrice == null || cartItems.totalPrice == undefined) ? convertDollar(cart.renewTotalPrice(cartItems)) : convertDollar(cartItems.totalPrice)}
 									<span className="ml-2">({cartItems.items.length} items)</span>
 								</p>
 								<span className="text-md text-slate-500">({numberToText.convertToText(cartItems.totalPrice, {case: 'lowerCase'})})</span>
@@ -136,7 +135,7 @@ export default function Navbar(){
 								>Check out</button>
 						</div>
 					</Modal.Footer>
-					: console.log("cart is empty")
+					: null
 					}
 
 					<div className="p-3">
