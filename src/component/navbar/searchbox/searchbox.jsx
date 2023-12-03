@@ -6,12 +6,12 @@ import Label from './../../elements/input/Label'
 export default function Searchbox(){
 
 	const [searchParams, setSearchParams] = useSearchParams({q: ''})
-	const keyword = searchParams.get('q').toLowerCase() ?? false
+	const keyword = searchParams.get('q') ?? false
 
 	function searchInputChangeHandler(e){
 		const value = e.target.value
 		setSearchParams(prev => {
-			prev.set('q', value)
+			prev.set('q', value.toLowerCase())
 			return prev
 		}, {replace: true})
 	}
@@ -19,22 +19,24 @@ export default function Searchbox(){
 	function searchSubmitHandler(e){
       e.preventDefault()
 
-      if (window.location.href!==window.location.origin) {
-      	window.location.href = `${window.location.origin}/?q=${keyword}`
+      const curentUrl = window.location.href
+      const originUrl = window.location.origin
+
+      // if current url is homepage but have url params
+      if(curentUrl.split('/')[3].includes('?') || curentUrl.split('/')[3].includes('=')) return
+
+      // if current page(url) is not the homepage
+      if(curentUrl.split('/')[3] !== undefined){
+      	// and if the current url != to origin url
+	      if (curentUrl !== originUrl) {
+	      	// redirect user to get result of the search ath the home page
+	      	window.location.href = `${originUrl}/?q=${keyword.toLowerCase()}&category=all`
+	      }
       }
+
     }
 
 	return(
-		// <form action="" onSubmit={(e) => searchSubmitHandler(e)} className="flex items-center  overflow-hidden rounded-lg bg-slate-100">
-		// 	<Input 
-			// value={!keyword ? '' : keyword} 
-			// onChangeHandler={searchInputChangeHandler} 
-			// type="search" 
-			// placeHolder="Search some products..." 
-			// id="searchbox" 
-			// style="bg-transparent" />
-		// 	<Label htmlFor="searchbox" style="py-2 px-3 bg-indigo-900 text-white"><i className='bx bx-search bx-sm'></i></Label>
-		// </form>
      <form action="" 
      	onSubmit={(e) => searchSubmitHandler(e)} 
      	className="text-gray-600 relative">
