@@ -13,7 +13,7 @@ import numberToText from 'number-to-text'
 import {enUsConverter} from 'number-to-text/converters/en-us'
 import { ShoppingCart, addItem, decreaseItem,removeItem } from  '../../context/ShoppingCart'
 
-export default function Navbar(){
+export default function Navbar({setErrorState}){
 
 	// json.parse for change string to boolean
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')) ?? false)
@@ -68,7 +68,7 @@ export default function Navbar(){
 				</Link>
 
 				<div className="flex items-center gap-[15px]">
-					<Searchbox/>
+					<Searchbox setErrorState={setErrorState}/>
 
 					<div className="relative">
 						<button 
