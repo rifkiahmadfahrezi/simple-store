@@ -6,19 +6,20 @@ import Footer from '../component/footer'
 import product from '../utils/data.js'
 import Dropdown from '../component/dropdown'
 import Skeleton from '../component/skeleton'
+import Pagination from '../component/pagination'
 import cart from '../utils/cart.js'
 import { getDiscountedPrice } from '../utils/tools.js'
-import { ShoppingCart, addItem, decreaseItem,removeItem } from  '../context/ShoppingCart'
+import { ShoppingCart, addNewItem, decreaseItem,removeItem } from  '../context/ShoppingCart'
 
 export default function Home(){
 
     const [categories, setCategories] = useState([])
     const [productsData, setProductsData] = useState([])
     const [error, setError] = useState({isError: false, message: '', img: null})
-    const [selectedCategory, setSelectedCategory] = useState( "select category")
+    const [selectedCategory, setSelectedCategory] = useState(null)
     const [searchParams, setSearchParams] = useSearchParams({q:''})
-    const keyword = searchParams.get('q').toLowerCase()
-    const categoryParams = searchParams.get('category')
+    const keyword = searchParams.get('q') || null
+    const categoryParams = searchParams.get('category') || null
     const [ isProductFound, setIsProductFound] = useState(true)
     const [ isCategoryExist, setIsCategoryExist ] = useState(false)
 
@@ -36,8 +37,10 @@ export default function Home(){
         setProductsData(response.products)
       }
       if (isCategoryExist){
-        setSelectedCategory(categoryParams)
-        getProductByCategory(categoryParams)
+        if(categoryParams !== 'all'){
+          setSelectedCategory(categoryParams)
+          getProductByCategory(categoryParams)
+        }
       }else{
         getProducts(product.getAllProducts())
         .catch(error => {
@@ -58,10 +61,12 @@ export default function Home(){
     useEffect(()=> {
 
       async function getCategories(data){
-        setCategories(await data)
+        const response = await data
+        setCategories(['all', ...response])
       }
       async function getProducts(data){
         const response = await data
+        console.log(response.products.length)
         setProductsData(response.products)
       }
 
@@ -79,7 +84,7 @@ export default function Home(){
         setTimeout(()=> location.reload(), 2500)
       }) 
 
-      if(categoryParams === null || categoryParams == '' || categoryParams === 'all') {
+      if(categoryParams === null && categoryParams == '' && categoryParams === 'all') {
         getProducts(product.getAllProducts())
         .catch(error => {
           console.error(error)
@@ -94,6 +99,7 @@ export default function Home(){
           setTimeout(()=> location.reload(), 2500)
         })
       }
+
     },[])
 
 
@@ -158,55 +164,39 @@ export default function Home(){
       e.preventDefault()
       // get id from clicked btn
       const productId = e.target.dataset.productid
+      addNewItem(cartItems, setCartItems,productId)
+    } 
 
-      // get Product info by ID
-      async function getProductById(data){
-        const response = await data ?? false
-        if(!response){
-          Swal.fire({
-            title: "Adding product to cart failed!",
-            timer: 1500,
-            timerProgressBar: true,
-            icon: 'error'
-          });
-        }else{
-          if(addItem(setCartItems, response)){
-            const existCartItem = cartItems.items.find(item => item.id == response.id)
 
-            if (!existCartItem){
-              Swal.fire({
-                title: "Product added to cart!",
-                timer: 1500,
-                timerProgressBar: true,
-                icon: 'success'
-              }) 
-            }else{
-              if(existCartItem?.quantity >= response.stock){
-                Swal.fire({
-                  title: "Maximum quantity!",
-                  text: `You can't have more quantity than product stock`,
-                  timer: 3500,
-                  timerProgressBar: true,
-                  icon: 'error'
-                })
-              }
-            }
-          }else{
-            Swal.fire({
-            title: "Adding product to cart failed!",
-            timer: 1500,
-            timerProgressBar: true,
-            icon: 'error'
-          });
-          }
-        }
-        
-      }
+    function resetProductData(e){
+      e.preventDefault()          
+      searchParams.delete('q')
+      // searchParams.delete('category')
 
-      getProductById(product.getProduct(Number(productId)))
-      .catch(err => console.error(err))
+      setSearchParams(searchParams);
+
+
+      // async function getProducts(data){
+      //   const response = await data
+      //   setProductsData(response.products)
+      // }
+
+
+      // getProducts(product.getAllProducts())
+      // .catch((error) => {
+      //   console.error(error)
+      //   Swal.fire({
+      //     title: 'Someting went wrong :(',
+      //     text: 'Fail to get products data from server, please wait!',
+      //     timer: 2500,
+      //     timerProgressBar: true,
+      //   })
+
+      //   setTimeout(()=> location.reload(), 2500)
+      // })
+
+
     }
-
 
     return(
       <>
@@ -214,18 +204,17 @@ export default function Home(){
 
         <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center gap-2 justify-between">
-            <h2 className="font-semibold font-montserrat capitalize text-indigo-900"
-            >our products</h2>
+            <h2 
+              className="font-semibold font-montserrat capitalize text-indigo-900"
+            >
+              our {(selectedCategory !== null && selectedCategory !== 'all') 
+              ? <span className="font-bold">{selectedCategory.split('-').join(' ') }</span>
+              : ''} products
+            </h2>
 
-            {(keyword === null || keyword != '')
+            {(keyword !== null)
               ? <button 
-                  onClick={()=> {
-                    
-                    setSearchParams(prev => {
-                      prev.set('q', '')
-                      return prev
-                    },{ replace: true})
-                  }}
+                  onClick={(e)=> resetProductData(e)}
                   className="py-1 px-2 text-sm font-montserrat capitalize bg-indigo-50 rounded-md flex items-center">
                   show all products <i className='ml-2 bx bx-refresh'></i>
                 </button>
@@ -233,19 +222,28 @@ export default function Home(){
             }
 
             <Dropdown 
-                text={selectedCategory !== "all" ? selectedCategory.split('-').join(' ') : "Select category"}>
-                  <span data-category="all" className="text-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-slate-200 capitalize" onClick={(e)=> dropdownItemClickHandler(e)}>All</span>
-              {categories.sort()?.map((item, i) => {
-                return (
-                  <span key={i} data-category={item} className="text-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-slate-200 capitalize" onClick={(e)=> dropdownItemClickHandler(e)}>{item.split('-').join(' ')}</span>
-                )
-              })}
+                text="Select category">
+              {categories?.length > 1 &&
+                categories?.map((item, i) => {
+                  return (
+                    <span 
+                      key={i} 
+                      data-category={item} 
+                      className="text-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-slate-200 capitalize" 
+                      onClick={(e)=> dropdownItemClickHandler(e)}>
+                        {item.split('-').join(' ')}
+                      </span>
+                  )
+                })
+              }
             </Dropdown>
           </div>
         </div>
 
-
-        {!isCategoryExist ? <p className="text-lg my-5 text-center font-montserrat text-indigo-900">{`Category '${categoryParams}' is not exist, please select the correct category!`}</p> : null}
+        {categoryParams !== null && !isCategoryExist
+            ? <p className="text-lg my-5 text-center font-montserrat text-indigo-900">{`Category '${categoryParams}' is not exist, please select the correct category!`}</p> 
+            : null
+        }
 
         {!error.isError ?
         <div className="grid min-h-screen container mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -253,26 +251,31 @@ export default function Home(){
 
             {productsData?.length > 0 ?
               productsData.filter((item,index,arr) => {
-                if(keyword !== null || keyword != '') {
-                  return item.title.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword)
+                if(keyword !== null) {
+                  return item.title.toLowerCase().includes(keyword.toLowerCase()) || item.brand.toLowerCase().includes(keyword.toLowerCase())
                 }else{
                   return arr
                 }
               })?.map((item, index, arr) => {
                 return (
-                  <Card key={item.id} to={`/product/${item.id}`} style={`cursor-pointer hover:shadow-2xl shadow-md transition duration-300`} discount={item.discountPercentage}>
-                    <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
-                    <Card.body>
-                        <p 
-                          className="font-semibold mb-1">
-                          <span className="text-2xl text-indigo-900 mr-1">
-                          ${getDiscountedPrice(item.discountPercentage,item.price)}</span>
-                          <span className="line-through text-md text-indigo-300">${item.price}</span>
-                        </p>
-                        <h4>{item.title}</h4>
-                        <h5 className="font-semibold"><i className='text-indigo-900 bx bxs-check-circle'></i>{item.brand}</h5>
-                        <span className="mt-1"><i className='bx bxs-star text-yellow-400 text-xl'></i> {item.rating}</span>
-                    </Card.body>
+                  <Card 
+                    key={item.id} 
+                    to={`/product/${item.id}`} 
+                    style={`cursor-pointer h-[500px] hover:shadow-2xl shadow-lg transition duration-300 flex flex-col justify-between`} discount={item.discountPercentage}>
+                    <div>
+                      <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
+                      <Card.body>
+                          <p 
+                            className="font-semibold mb-1">
+                            <span className="text-2xl text-indigo-900 mr-1">
+                            ${getDiscountedPrice(item.discountPercentage,item.price)}</span>
+                            <span className="line-through text-md text-indigo-300">${item.price}</span>
+                          </p>
+                          <h4>{item.title}</h4>
+                          <h5 className="font-semibold"><i className='text-indigo-900 bx bxs-check-circle'></i>{item.brand}</h5>
+                          <span className="mt-1"><i className='bx bxs-star text-yellow-400 text-xl'></i> {item.rating}</span>
+                      </Card.body>
+                    </div>
                     <Card.footer >
                         <button type="button" onClick={e => addToCart(e)} className="py-2 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700" data-productid={item.id}>
                          <i className="bx bx-cart"></i> Add to cart
@@ -284,12 +287,16 @@ export default function Home(){
               
             }
 
+
         </div>
+
           : <div className="container mx-auto text-center  w-[90%] sm:w-full mt-8">
             {error.img !== null && <img width="350px" className="mx-auto object-contain mb-4" src={`/img/${error.img}`} alt="image error"/>}
             <p className="text-[30px] font-montserrat text-indigo-900">{error.message}</p>
           </div>
         }
+
+        <Pagination dataLength="100"/>
 
         <Footer/>
 

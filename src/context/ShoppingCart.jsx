@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react'
 import cart from '../utils/cart.js'
+import product from '../utils/data.js'
 const ShoppingCartContext = createContext() 
 
 function ShoppingCartContextProvider({children}){
@@ -8,9 +9,9 @@ function ShoppingCartContextProvider({children}){
 	useEffect(()=> {
 
       if (cartItems.length > 1){
-		cartItems.totalPrice = cart.renewTotalPrice(cartItems)
         const items = cartItems.filter((item) => item.id != undefined) 
-         localStorage.setItem('cart', JSON.stringify(items))
+		    items.totalPrice = cart.renewTotalPrice(items)
+        localStorage.setItem('cart', JSON.stringify(items))
       }else{
          localStorage.setItem('cart', JSON.stringify(cartItems))
       }
@@ -23,6 +24,67 @@ function ShoppingCartContextProvider({children}){
 			{children}
 		</ShoppingCartContext.Provider>
 	)
+}
+
+export function addNewItem(cartItems, setItemHook,id){
+  // get Product info by ID
+      async function getProductById(data){
+        const response = await data ?? false
+        if(!response){
+          Swal.fire({
+            title: "Adding product to cart failed!",
+            timer: 1500,
+            timerProgressBar: true,
+            icon: 'error'
+          });
+        }else{
+          if(addItem(setItemHook, response)){
+            const existCartItem = cartItems.items.find(item => item.id == response.id)
+
+            if(existCartItem?.quantity > 1){
+              Swal.fire({
+                title: "Product added to cart!",
+                position: 'top-end',
+                timer: 1500,
+                timerProgressBar: true,
+                icon: 'success'
+              }) 
+            }
+
+
+            if (!existCartItem){
+              Swal.fire({
+                title: "New product added to cart!",
+                position: 'top-end',
+                timer: 1500,
+                timerProgressBar: true,
+                icon: 'success'
+              }) 
+            }else{
+              if(existCartItem?.quantity >= response.stock){
+                Swal.fire({
+                  title: "Maximum quantity!",
+                  text: `You can't have more quantity than product stock`,
+                  timer: 3500,
+                  timerProgressBar: true,
+                  icon: 'error'
+                })
+              }
+            }
+          }else{
+            Swal.fire({
+            title: "Adding product to cart failed!",
+            timer: 1500,
+            timerProgressBar: true,
+            icon: 'error'
+          });
+          }
+        }
+        
+      }
+
+      getProductById(product.getProduct(Number(id)))
+      .catch(err => console.error(err))
 }
 
 export function addItem(setItemHook, item){

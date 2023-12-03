@@ -6,7 +6,7 @@ import Footer from '../component/footer'
 import ProductDetails from '../component/ProductDetails'
 import product from '../utils/data.js'
 import cart from '../utils/cart.js'
-import { ShoppingCart, addItem, decreaseItem,removeItem } from  '../context/ShoppingCart'
+import { ShoppingCart, addNewItem, decreaseItem,removeItem } from  '../context/ShoppingCart'
 
 
 
@@ -21,53 +21,7 @@ export default function Product(){
       e.preventDefault()
       // get id from clicked btn`
       const productId = e.target.dataset.productid
-
-      // get Product info by ID
-      async function getProductById(data){
-        const response = await data ?? false
-        if(!response){
-          Swal.fire({
-            title: "Adding product to cart failed!",
-            timer: 1500,
-            timerProgressBar: true,
-            icon: 'error'
-          });
-        }else{
-          if(addItem(setCartItems, response)){
-            const existCartItem = cartItems.items.find(item => item.id == response.id)
-
-            if (!existCartItem){
-              Swal.fire({
-                title: "Product added to cart!",
-                timer: 1500,
-                timerProgressBar: true,
-                icon: 'success'
-              }) 
-            }else{
-              if(existCartItem?.quantity >= response.stock){
-                Swal.fire({
-                  title: "Maximum quantity!",
-                  text: `You can't have more quantity than product stock`,
-                  timer: 3500,
-                  timerProgressBar: true,
-                  icon: 'error'
-                })
-              }
-            }
-          }else{
-            Swal.fire({
-            title: "Adding product to cart failed!",
-            timer: 1500,
-            timerProgressBar: true,
-            icon: 'error'
-          });
-          }
-        }
-        
-      }
-
-      getProductById(product.getProduct(Number(productId)))
-      .catch(err => console.error(err))
+      addNewItem(cartItems, setCartItems, productId)
     }
 
 
@@ -89,7 +43,7 @@ export default function Product(){
 								return (
 									<div key={i} 
 										onClick={(e) => changeThumbnail(e)} 
-										className={`flex items-center border-2 border-indigo-900 cursor-pointer  hover:opacity-[.7] max-w-[100px] h-[100px] rounded-md ${item == thumbnail ? 'ring ring-indigo-300' : null}`}>
+										className={`flex items-center border-2 border-indigo-900 cursor-pointer overflow-hidden hover:opacity-[.7] max-w-[100px] h-[100px] rounded-md ${item == thumbnail ? 'ring ring-indigo-300' : null}`}>
 										<div>
 											<img className={`${item == thumbnail ? 'opacity-[8]' : null}object-cover p-1`} width="100%" height="100%" src={item} alt={`image of ${products.category}`}/>
 										</div>
