@@ -52,13 +52,10 @@ const cart = {
         		if(item.quantity >= item.stock){
         			item.quantity = item.stock
         		}else{
-        			console.log('ok')
 					this.totalPrice += item.price
         		}
-        		console.log(item.quantity, item.price, this.totalPrice)
     			item.totalProductPrice = item.price * item.quantity
         		this.totalPrice = this.renewTotalPrice(this)
-        		console.log(this.totalPrice)
 				return item
   
         	})
@@ -74,9 +71,6 @@ const cart = {
 		return this
 	},
 	decrease: function(productInfo){
-
-
-
 		const cartProduct = this.items.find(item => item.id === productInfo.id)
 
 		if(cartProduct){
@@ -145,7 +139,7 @@ const cart = {
 			this.totalPrice = 0
 			localStorage.setItem('cart', JSON.stringify({
 				items: this.items,
-				totalPrice: this.totalPrice
+				totalPrice: this.renewTotalPrice(this)
 			}))
 		}
 		return this
