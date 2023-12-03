@@ -20,7 +20,6 @@ export default function Home(){
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q') || null
     const categoryParams = searchParams.get('category') || null
-    const [ isProductFound, setIsProductFound] = useState(true)
     const [ isCategoryExist, setIsCategoryExist ] = useState(false)
 
     const { cartItems, setCartItems } = useContext(ShoppingCart)
@@ -172,35 +171,64 @@ export default function Home(){
       e.preventDefault()          
       searchParams.delete('q')
       // searchParams.delete('category')
-
+      setError({isError: false,message: '', img: null})
       setSearchParams(searchParams);
 
+    }
 
-      // async function getProducts(data){
-      //   const response = await data
-      //   setProductsData(response.products)
-      // }
+    function displayProductCards(){
+      const cards = productsData.filter((item,index,arr) => {
+          if(keyword !== null) {
+            return item.title.toLowerCase().includes(keyword?.toLowerCase()) || item.brand.toLowerCase().includes(keyword?.toLowerCase())
+          }else{
+            return arr
+          }
+        })?.map((item, index, arr) => {
+          return (
+            <Card 
+              key={item.id} 
+              to={`/product/${item.id}`} 
+              style={`cursor-pointer h-[500px] hover:shadow-2xl shadow-lg transition duration-300 flex flex-col justify-between`} discount={item.discountPercentage}>
+              <div>
+                <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
+                <Card.body>
+                    <p 
+                      className="font-semibold mb-1">
+                      <span className="text-2xl text-indigo-900 mr-1">
+                      ${getDiscountedPrice(item.discountPercentage,item.price)}</span>
+                      <span className="line-through text-md text-indigo-300">${item.price}</span>
+                    </p>
+                    <h4>{item.title}</h4>
+                    <h5 className="font-semibold"><i className='text-indigo-900 bx bxs-check-circle'></i>{item.brand}</h5>
+                    <span className="mt-1"><i className='bx bxs-star text-yellow-400 text-xl'></i> {item.rating}</span>
+                </Card.body>
+              </div>
+              <Card.footer >
+                  <button type="button" onClick={e => addToCart(e)} className="py-2 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700" data-productid={item.id}>
+                   <i className="bx bx-cart"></i> Add to cart
+                  </button>
+              </Card.footer>
+            </Card> 
+          )
+        })
+
+        const isProductFound = productsData.find(item => item.title.toLowerCase().includes(keyword?.toLowerCase()) || item.brand.toLowerCase().includes(keyword?.toLowerCase())) ?? false
 
 
-      // getProducts(product.getAllProducts())
-      // .catch((error) => {
-      //   console.error(error)
-      //   Swal.fire({
-      //     title: 'Someting went wrong :(',
-      //     text: 'Fail to get products data from server, please wait!',
-      //     timer: 2500,
-      //     timerProgressBar: true,
-      //   })
+        if(!isProductFound && cards.length <= 0){
+          setError({
+            isError: true,
+            message: `Product '${keyword}' is not found, please input keyword correctly`,
+            img: 'product-not-found.svg'
+          })
+        }
 
-      //   setTimeout(()=> location.reload(), 2500)
-      // })
-
-
+        return cards
     }
 
     return(
       <>
-        <Navbar />
+        <Navbar setErrorState={setError}/>
 
         <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
           <div className="flex items-center gap-2 justify-between">
@@ -249,54 +277,21 @@ export default function Home(){
         <div className="grid min-h-screen container mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
 
 
-            {productsData?.length > 0 ?
-              productsData.filter((item,index,arr) => {
-                if(keyword !== null) {
-                  return item.title.toLowerCase().includes(keyword.toLowerCase()) || item.brand.toLowerCase().includes(keyword.toLowerCase())
-                }else{
-                  return arr
-                }
-              })?.map((item, index, arr) => {
-                return (
-                  <Card 
-                    key={item.id} 
-                    to={`/product/${item.id}`} 
-                    style={`cursor-pointer h-[500px] hover:shadow-2xl shadow-lg transition duration-300 flex flex-col justify-between`} discount={item.discountPercentage}>
-                    <div>
-                      <Card.image src={item.thumbnail} alt={item.title} style="h-[250px] object-center"/>
-                      <Card.body>
-                          <p 
-                            className="font-semibold mb-1">
-                            <span className="text-2xl text-indigo-900 mr-1">
-                            ${getDiscountedPrice(item.discountPercentage,item.price)}</span>
-                            <span className="line-through text-md text-indigo-300">${item.price}</span>
-                          </p>
-                          <h4>{item.title}</h4>
-                          <h5 className="font-semibold"><i className='text-indigo-900 bx bxs-check-circle'></i>{item.brand}</h5>
-                          <span className="mt-1"><i className='bx bxs-star text-yellow-400 text-xl'></i> {item.rating}</span>
-                      </Card.body>
-                    </div>
-                    <Card.footer >
-                        <button type="button" onClick={e => addToCart(e)} className="py-2 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700" data-productid={item.id}>
-                         <i className="bx bx-cart"></i> Add to cart
-                        </button>
-                    </Card.footer>
-                  </Card> 
-                )
-              }) : <Skeleton number="8" style="h-[300px] rounded-md"/>
-              
+            {productsData?.length > 0 
+               ? displayProductCards()
+               : <Skeleton number="8" style="h-[300px] rounded-md"/>
             }
 
 
         </div>
 
-          : <div className="container mx-auto text-center  w-[90%] sm:w-full mt-8">
+          : <div className="container min-h-screen mx-auto text-center  w-[90%] sm:w-full mt-8">
             {error.img !== null && <img width="350px" className="mx-auto object-contain mb-4" src={`/img/${error.img}`} alt="image error"/>}
             <p className="text-[30px] font-montserrat text-indigo-900">{error.message}</p>
           </div>
         }
 
-        <Pagination dataLength="100"/>
+        <Pagination dataLength="100" />
 
         <Footer/>
 
