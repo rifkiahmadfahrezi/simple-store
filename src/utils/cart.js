@@ -16,7 +16,9 @@ function getCartTotalPrice() {
 const cart = {
 	items: getCartItems(),
 	totalPrice: getCartTotalPrice(),
-	add: function (productInfo) {
+	// productInfo is an object contain with product information like id,title,thumbnail ...etc
+	// addQuantity is a number of quantity that user input at the cart modal
+	add: function (productInfo, addQuantity = 0) {
 		if (productInfo === undefined) return this.items
 
 		const cartItem = {
@@ -48,7 +50,13 @@ const cart = {
 					getThumbnail(product.getThumbnail(productInfo.id))
 					.catch((err) => console.log(err))
     			}
-        		item.quantity++
+    			
+    			if(addQuantity > 0){
+    				item.quantity = addQuantity
+    			}else{
+        			item.quantity++
+    			}
+
         		if(item.quantity >= item.stock){
         			item.quantity = item.stock
         		}else{

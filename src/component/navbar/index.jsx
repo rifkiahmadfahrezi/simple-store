@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext} from 'react'
 import Link from './../elements/link/Link'
 import Input from './../elements/input/Input'
 import Label from './../elements/input/Label'
@@ -11,17 +11,18 @@ import { convertDollar, getDiscountedPrice } from '../../utils/tools.js'
 // convert number to text
 import numberToText from 'number-to-text'
 import {enUsConverter} from 'number-to-text/converters/en-us'
-import { ShoppingCart, addItem, decreaseItem,removeItem } from  '../../context/ShoppingCart'
+import { ShoppingCart, doCheckOut, addItem, decreaseItem,removeItem } from  '../../context/ShoppingCart'
 
 export default function Navbar({setErrorState}){
 
 	// json.parse for change string to boolean
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')) ?? false)
 	const [ userInfo, setUserInfo ] = useState({})
-	const userId = sessionStorage.getItem('userId')
     const [ modal, setModal ] = useState({isActive: false, target: null})
-    const { cartItems, setCartItems } = useContext(ShoppingCart)
 
+	const userId = sessionStorage.getItem('userId')
+
+    const { cartItems, setCartItems } = useContext(ShoppingCart)
 
 	useEffect(() => {
 		setUserInfo(getUser(userId))
@@ -51,13 +52,14 @@ export default function Navbar({setErrorState}){
 	          timerProgressBar: true,
 	        })
 		}else{
-			console.log('do checkout')
+			 window.location.href = window.location.origin + '/transaction'
 		}
 
 	}
 
-
-
+	function getCurrentPage(){
+		return window.location.href.split('/')[3]
+	}
 	return(
 	<>
 		<nav className="bg-white shadow-md w-full py-5 sticky top-0 z-[99] ">
@@ -70,6 +72,7 @@ export default function Navbar({setErrorState}){
 				<div className="flex items-center gap-[15px]">
 					<Searchbox setErrorState={setErrorState}/>
 
+					{getCurrentPage() !== 'transaction' &&
 					<div className="relative">
 						<button 
 							onClick={()=> toggleModal('cart') } 
@@ -85,6 +88,7 @@ export default function Navbar({setErrorState}){
 							}
 						</button>
 					</div>
+					}
 
 					<div className="flex items-center gap-[10px]">
 						{!isLogin ? 
@@ -98,8 +102,13 @@ export default function Navbar({setErrorState}){
 									Hello!, {userInfo.surName || 'user'}
 								</div>
 								<div className="py-2 text-center cursor-pointer hover:bg-slate-100" onClick={()=>toggleModal('account-setting')}>
-									Account settings
+									Account information
 								</div>
+								<Link 
+									to="/transaction-history"
+									style="flex justify-center py-2 text-center cursor-pointer hover:bg-slate-100">
+									Transaction history
+								</Link>
 								<div 
 									onClick={e=> doLogout(e)} 
 									className="py-2 text-center cursor-pointer bg-slate-50 hover:bg-slate-100">
@@ -112,7 +121,9 @@ export default function Navbar({setErrorState}){
 			</div>
 		</nav>
 
-		{(modal.isActive && modal.target === 'cart') &&
+		{}
+
+		{(modal.isActive && modal.target === 'cart' && getCurrentPage() !== 'transaction') &&
 			<Modal>
 				<Modal.Body closeModalHandler={toggleModal}>
 					{cartItems.items?.length > 0 ? 
@@ -157,7 +168,8 @@ export default function Navbar({setErrorState}){
 											: null
 											}
 											</figure>
-											<figcaption className="flex flex-col ml-2 justify-between">
+											<figcaption 
+											className="flex flex-col ml-2 justify-between">
 												<div>
 													<h4 className="font-semibold">{item.title}</h4>
 													<p className={`${item.quantity >= item.stock ? 'text-red-400' : 'text-indigo-800'}`}>
@@ -170,26 +182,23 @@ export default function Navbar({setErrorState}){
 														${convertDollar(item.price)} &times; {item.quantity} = ${convertDollar(item.totalProductPrice)}</h6>
 												</div>
 
-												<form onSubmit={e=> e.preventDefault()} className="flex rounded-sm">
+												<div className="flex rounded-sm">
 													<button 
 														type="button"
 														className="bg-indigo-50 py-1 px-2"
 														onClick={()=> decreaseItem(setCartItems,item)} >
 														<i className='bx bx-minus'></i>
 													</button>
-													<input 
-														onChange={(e)=> setQuantity(e.target.value)} 
-														onInput={(e)=> setQuantity(e.target.value)} 
-														className="w-[60px] text-center bg-slate-50" 
-														type="number"
-														value={ item.quantity }/>
+													<span className="w-[60px] text-center leading-0 bg-slate-50 flex items-center justify-center">
+														{item.quantity}
+													</span>
 													<button 
 														type="button"
 														className="bg-indigo-50 py-1 px-2"
 														onClick={()=> addItem(setCartItems, item)}>
 														<i className='bx bx-plus'></i>
 													</button>
-												</form>
+												</div>
 											</figcaption>
 										</div>
 										<div>
@@ -217,44 +226,44 @@ export default function Navbar({setErrorState}){
 			<Modal>
 				<Modal.Body closeModalHandler={toggleModal}>
 					<div className="p-3 flex flex-col gap-3 mb-8">
-						<form action="">
+						<form action="" onSubmit={e=> e.preventDefault()} >
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">name:</Label>
-								<Input value={userInfo.surName} style="bg-slate-50 rounded-md"/>
+								<Input readOnly value={userInfo.fullName} style="bg-slate-50 rounded-md"/>
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">username:</Label>
-								<Input value={userInfo.username} style="bg-slate-50 rounded-md"/>
+								<Input readOnly value={userInfo.username} style="bg-slate-50 rounded-md"/>
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">e-mail:</Label>
-								<Input value={userInfo.email} style="bg-slate-50 rounded-md"/>
+								<Input readOnly value={userInfo.email} style="bg-slate-50 rounded-md"/>
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">full address:</Label>
-								<Input value={userInfo.address.fullAdress} style="bg-slate-50 rounded-md"/>
+								<Input readOnly value={userInfo.address.fullAdress} style="bg-slate-50 rounded-md"/>
 							</div>
 							<div className="grid grid-cols-3 gap-1">
 								<div className="flex flex-col">
 									<Label style="mb-2 capitalize">country:</Label>
-									<Input value={userInfo.address.country} style="bg-slate-50 rounded-md"/>
+									<Input readOnly value={userInfo.address.country} style="bg-slate-50 rounded-md"/>
 								</div>
 								<div className="flex flex-col">
 									<Label style="mb-2 capitalize">state:</Label>
-									<Input value={userInfo.address.state} style="bg-slate-50 rounded-md"/>
+									<Input readOnly value={userInfo.address.state} style="bg-slate-50 rounded-md"/>
 								</div>
 								<div className="flex flex-col">
 									<Label style="mb-2 capitalize">city:</Label>
-									<Input value={userInfo.address.city} style="bg-slate-50 rounded-md"/>
+									<Input readOnly value={userInfo.address.city} style="bg-slate-50 rounded-md"/>
 								</div>
 							</div>
 
-							<Modal.Header>
+							<Modal.Footer>
 								<button 
 									className="font-montserrat py-2 px-3 rounded-md bg-indigo-900 mt-3 text-white" 
 									type="submit">
 									Update</button>
-							</Modal.Header>
+							</Modal.Footer>
 
 						</form>
 					</div>

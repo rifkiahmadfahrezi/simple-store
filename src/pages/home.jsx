@@ -17,10 +17,11 @@ export default function Home(){
     const [productsData, setProductsData] = useState([])
     const [error, setError] = useState({isError: false, message: '', img: null})
     const [selectedCategory, setSelectedCategory] = useState(null)
+    const [ isCategoryExist, setIsCategoryExist ] = useState(false)
+
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q') || null
     const categoryParams = searchParams.get('category') || null
-    const [ isCategoryExist, setIsCategoryExist ] = useState(false)
 
     const { cartItems, setCartItems } = useContext(ShoppingCart)
 
@@ -252,7 +253,7 @@ export default function Home(){
             <Dropdown 
                 text="Select category">
               {categories?.length > 1 &&
-                categories?.map((item, i) => {
+                categories?.sort().map((item, i) => {
                   return (
                     <span 
                       key={i} 

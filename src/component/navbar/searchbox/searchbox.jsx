@@ -3,14 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import Input from './../../elements/input/Input'
 import Label from './../../elements/input/Label'
 
-export default function Searchbox({setErrorState}){
+export default function Searchbox({setErrorState = undefined}){
 
 	const [searchParams, setSearchParams] = useSearchParams({q: ''})
 	const keyword = searchParams.get('q') ?? false
 
 	function searchInputChangeHandler(e){
 		const value = e.target.value
-		setErrorState({isError: false,message: '', img: null})
+		if (setErrorState !== undefined) setErrorState({isError: false,message: '', img: null})
 		setSearchParams(prev => {
 			prev.set('q', value.toLowerCase())
 			return prev
