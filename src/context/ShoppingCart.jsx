@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react'
 import cart from '../utils/cart.js'
 import product from '../utils/data.js'
+import {isUserExist} from '../utils/user.js'
 const ShoppingCartContext = createContext() 
 
 function ShoppingCartContextProvider({children}){
@@ -26,39 +27,93 @@ function ShoppingCartContextProvider({children}){
 	)
 }
 
+// cartItems down here is a state that come from the children component
+// or from the component that call these funtion below
+// so is not the same as the cartItem at the ShoppingCartContextProvider function
+
+// setItemHook is basicaly a setState hook from the child component
+// or from the component that call these funtion below
+
+// autorized will true if user do checkout by clicking the checkout button
+export function doCheckOut(setItemHook, cartItems, authorized = false, userId= null){
+  if(!authorized && userId === null) return
+  // check is user exist in user data
+  if(!isUserExist(userId)) return
+  // if cart items is empty
+  if(cartItems.items.length <= 0) return
+
+  // check is there a transaction before
+  const transactionHistory = localStorage.getItem('history') ?? false
+  
+  // if this is the first checkout
+  if(!transactionHistory){
+    // set transaction history to localStorage
+    localStorage.setItem('history', JSON.stringify([{id: +new Date(),user: userId, items: cartItems.items, price: cartItems.totalPrice}]))
+  }else{
+    // if there is a transaction before
+    // add transaction history and the new transaction data to local storage
+    localStorage.setItem('history', JSON.stringify([...JSON.parse(transactionHistory), {id: +new Date(),user: userId, items: cartItems.items, price: cartItems.totalPrice}]))
+  }
+
+  setItemHook({items: [], totalPrice: 0})
+  localStorage.setItem('cart', JSON.stringify({items: [], totalPrice: 0}))
+
+  Swal.fire({
+    title: 'Transaction success!',
+    icon: 'success',
+    timer: 3000,
+    timerProgressBar: true,
+  })
+
+  setTimeout(()=> {
+    window.location.href = window.location.origin
+  }, 3000)
+
+}
+
 export function addNewItem(cartItems, setItemHook,id){
   // get Product info by ID
       async function getProductById(data){
         const response = await data ?? false
         if(!response){
           Swal.fire({
-            title: "Adding product to cart failed!",
-            timer: 1500,
+            toast: true,
+            icon: 'error',
+            title: 'Product failed add to cart cart',
+            animation: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
             timerProgressBar: true,
-            icon: 'error'
-          });
+          }) 
         }else{
           if(addItem(setItemHook, response)){
             const existCartItem = cartItems.items.find(item => item.id == response.id)
 
             if(existCartItem?.quantity > 1){
-              Swal.fire({
-                title: "Product added to cart!",
-                position: 'top-end',
-                timer: 1500,
-                timerProgressBar: true,
-                icon: 'success'
-              }) 
+                Swal.fire({
+                  toast: true,
+                  icon: 'success',
+                  title: 'Product added to cart',
+                  animation: true,
+                  position: 'top-end',
+                  showConfirmButton: false,
+                  timer: 2000,
+                  timerProgressBar: true,
+                })  
             }
 
 
             if (!existCartItem){
               Swal.fire({
-                title: "New product added to cart!",
+                toast: true,
+                icon: 'success',
+                title: 'New product added to cart',
+                animation: true,
                 position: 'top-end',
-                timer: 1500,
+                showConfirmButton: false,
+                timer: 2000,
                 timerProgressBar: true,
-                icon: 'success'
               }) 
             }else{
               if(existCartItem?.quantity >= response.stock){
