@@ -5,6 +5,8 @@ import Home from './pages/Home'
 import Product, {loader} from './pages/Product'
 import LoginPage from './pages/LoginPage'
 import ErrorPage from './pages/ErrorPage'
+import Transaction from './pages/Transaction'
+import TransactionHistory from './pages/transactionHistory'
 import ShoppingCartContextProvider from './context/ShoppingCart'
 
 
@@ -23,6 +25,14 @@ const router = createBrowserRouter([
      path: '/product/:productId',
      element: <Product/>,
      loader: loader,
+  },
+  {
+     path: '/transaction/',
+     element: <Transaction/>,
+  },
+  {
+     path: '/transaction-history/',
+     element: <TransactionHistory/>,
   }
 
 ])
