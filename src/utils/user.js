@@ -4,7 +4,7 @@ const userData = [
 		fullName: 'Rifki ahmad fahrezi',
 		address: {
 			country: 'indonesia',
-			fullAdress: 'Jl Idi Adimaja 13, Jawa Barat',
+			fullAddress: 'Jl Idi Adimaja 13, Jawa Barat',
 			city: 'Bandung',
 			state: 'west java',
 			zip: '7107',
@@ -27,6 +27,12 @@ const userData = [
 export function getUser(id){
 	const user = userData.filter((data)=> data.id === Number(id))
 	return user[0]
+}
+
+export function isUserExist(id= null){
+	if(id === null) return console.error('Provide an id to check exist user')
+	const existUser = userData.find((user) => Number(user.id) === Number(id)) ?? false
+	return !existUser ? false : true
 }
 
 export default userData
