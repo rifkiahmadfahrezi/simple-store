@@ -11,12 +11,13 @@ export default function LoginPage(){
 	// json.parse for change string to boolean
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')))
 
-	const username = useRef('')
-	const password = useRef('')
+	const [username, setUsername] = useState('')
+	const [password, setPassword] = useState('')
 
 	useEffect(() => {
+		console.log('ok')
 		if(isLogin){
-			window.location.href = "/"
+			window.location.href = window.location.origin
 		}
 	},[])
 
@@ -29,7 +30,7 @@ export default function LoginPage(){
 		e.preventDefault()
 		// reset form if login failed
 		if (error.isError) e.target.reset() 
-		doLogin(username.current, password.current)
+		doLogin(username, password)
 	}
 
 	function doLogin(username = null, password = null){
@@ -49,17 +50,17 @@ export default function LoginPage(){
 		// sessionStorage.setItem("userid", )
 		setError({isError: false, message: null})
 		// redirect to homePage
-		window.location.href = "/"
+		window.location.href = window.location.origin
 	}
 
 	function userInputHandler(e){
 		const value = e.target.value
-		username.current = value
+		setUsername(value)
 
 	}
 	function passwordInputHandler(e){
 		const value = e.target.value
-		password.current = value
+		setPassword(value)
 	}
 
 	return(
@@ -75,29 +76,34 @@ export default function LoginPage(){
 
 		      			<div className="flex flex-col mb-4">
 		      				<Label style="mb-1 text-indigo-900">Username</Label>
-		      				<Input 
-		      					onChangeHandler={userInputHandler} 
-		      					style="border border-2-indigo-900 rounded-md" 
+		      				<input 
+		      					onChange={(e) => userInputHandler(e)} 
+		      					className="py-2 px-4 border border-2-indigo-900 rounded-md" 
+		      					defaultValue={username}
 		      					placeHolder="Username..."/>
 		      			</div>
 		      			<div className="flex flex-col mb-4">
 		      				<Label style="mb-1 text-indigo-900">Password</Label>
 		      				<div className="flex justify-between">
-		      					<Input 
+		      					<input 
 		      						type={`${!seePassword ? `password` : `text`}`} 
-		      						style="rounded-l-md w-[90%] border border-2-indigo-900" 
-		      						placeHolder="Password..." 
-		      						onChangeHandler={passwordInputHandler} />
+		      						className="py-2 px-4 rounded-l-md w-[90%] border border-2-indigo-900" 
+		      						placeHolder="Password..."
+		      						defaultValue={password} 
+		      						onChange={(e) => passwordInputHandler(e)} />
 
 		      					<button 
 		      						onClick={seePasswordClickHandler} 
-		      						type="button" className="w-[10%] rounded-r-md text-center text-xl bg-indigo-900 text-white">
+		      						type="button" 
+		      						className="w-[10%] rounded-r-md text-center text-xl bg-indigo-900 text-white">
 		      							<span className={`bx bx-${!seePassword ? `happy-heart-eyes` : 'tired'}`}></span>
 		      					</button>
 		      				</div>
 		      			</div>
 		      			<div className="flex flex-col mt-3">
-		      				<button className="py-3 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700">
+		      				<button 
+		      					type="submit"
+		      					className="py-3 w-full rounded-md bg-indigo-900 cursor-pointer font-montserrat text-white hover:bg-indigo-700">
 	                        Login
 	                       </button>
 		      			</div>
