@@ -64,13 +64,13 @@ export default function Navbar({setErrorState}){
 	return(
 	<>
 		<nav className="bg-white shadow-md w-full py-5 sticky top-0 z-[99] ">
-			<div className="container mx-auto w-[80%] sm:w-full flex flex-col sm:flex-row items-center justify-between">
+			<div className="container mx-auto w-[90%] sm:w-full flex flex-col sm:flex-row items-center justify-between">
 				<Link to="/" style="items-center mb-5 sm:mb-0 hidden sm:flex">
 					<img src="/favicon/android-chrome-192x192.png" alt="logo" width="30"/>
 					<span className="font-montserrat ml-1 font-bold ">imple Store</span>
 				</Link>
 
-				<div className="flex items-center gap-[15px]">
+				<div className="flex items-center gap-1 sm:gap-[15px] mx-3">
 					<Searchbox setErrorState={setErrorState}/>
 
 					{getCurrentPage() !== 'transaction' &&
@@ -230,41 +230,34 @@ export default function Navbar({setErrorState}){
 						<form action="" onSubmit={e=> e.preventDefault()} >
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">name:</Label>
-								<Input readOnly value={userInfo.fullName} style="bg-slate-50 rounded-md"/>
+								<input readOnly value={userInfo.fullName} className="bg-slate-50 py-2 px-4 rounded-md"/>
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">username:</Label>
-								<Input readOnly value={userInfo.username} style="bg-slate-50 rounded-md"/>
+								<input readOnly value={userInfo.username} className="bg-slate-50 py-2 px-4 rounded-md"/>
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">e-mail:</Label>
-								<Input readOnly value={userInfo.email} style="bg-slate-50 rounded-md"/>
+								<input readOnly value={userInfo.email} className="bg-slate-50 py-2 px-4 rounded-md"/>
 							</div>
 							<div className="flex flex-col">
 								<Label style="mb-2 capitalize">full address:</Label>
-								<Input readOnly value={userInfo.address.fullAdress} style="bg-slate-50 rounded-md"/>
+								<input readOnly value={userInfo.address.fullAddress} className="bg-slate-50 py-2 px-4 rounded-md"/>
 							</div>
 							<div className="grid grid-cols-3 gap-1">
 								<div className="flex flex-col">
 									<Label style="mb-2 capitalize">country:</Label>
-									<Input readOnly value={userInfo.address.country} style="bg-slate-50 rounded-md"/>
+									<input readOnly value={userInfo.address.country} className="bg-slate-50 py-2 px-4 rounded-md"/>
 								</div>
 								<div className="flex flex-col">
 									<Label style="mb-2 capitalize">state:</Label>
-									<Input readOnly value={userInfo.address.state} style="bg-slate-50 rounded-md"/>
+									<input readOnly value={userInfo.address.state} className="bg-slate-50 py-2 px-4 rounded-md"/>
 								</div>
 								<div className="flex flex-col">
 									<Label style="mb-2 capitalize">city:</Label>
-									<Input readOnly value={userInfo.address.city} style="bg-slate-50 rounded-md"/>
+									<input readOnly value={userInfo.address.city} className="bg-slate-50 py-2 px-4 rounded-md"/>
 								</div>
 							</div>
-
-							<Modal.Footer>
-								<button 
-									className="font-montserrat py-2 px-3 rounded-md bg-indigo-900 mt-3 text-white" 
-									type="submit">
-									Update</button>
-							</Modal.Footer>
 
 						</form>
 					</div>
