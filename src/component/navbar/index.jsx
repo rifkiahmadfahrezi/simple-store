@@ -31,6 +31,7 @@ export default function Navbar({setErrorState}){
 	function doLogout(e){
 		e.preventDefault()
 		setIsLogin(false)
+		window.location.href = window.location.origin
 		sessionStorage.setItem('login', false)
 	}
 
