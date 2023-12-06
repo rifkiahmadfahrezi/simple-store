@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react'
 import cart from '../utils/cart.js'
 import product from '../utils/data.js'
-import {isUserExist} from '../utils/user.js'
+import { getUser, isUserExist } from '../utils/user.js'
 const ShoppingCartContext = createContext() 
 
 function ShoppingCartContextProvider({children}){
@@ -39,6 +39,13 @@ export function doCheckOut(setItemHook, cartItems, authorized = false, userId= n
   if(!authorized && userId === null) return
   // check is user exist in user data
   if(!isUserExist(userId)) return
+  //get user data to get user address
+  const userData = getUser(Number(userId))
+  const userAddress = { 
+    fullName: userData.fullName,
+    email: userData.email,
+    address: userData.address
+  }
   // if cart items is empty
   if(cartItems.items.length <= 0) return
 
@@ -48,13 +55,14 @@ export function doCheckOut(setItemHook, cartItems, authorized = false, userId= n
   // if this is the first checkout
   if(!transactionHistory){
     // set transaction history to localStorage
-    localStorage.setItem('history', JSON.stringify([{id: +new Date(),user: userId, items: cartItems.items, price: cartItems.totalPrice}]))
+    localStorage.setItem('history', JSON.stringify([{id: +new Date(),user: userId, items: cartItems.items, totalCheckoutPrice: cartItems.totalPrice, address: userAddress}]))
   }else{
     // if there is a transaction before
     // add transaction history and the new transaction data to local storage
-    localStorage.setItem('history', JSON.stringify([...JSON.parse(transactionHistory), {id: +new Date(),user: userId, items: cartItems.items, price: cartItems.totalPrice}]))
+    localStorage.setItem('history', JSON.stringify([...JSON.parse(transactionHistory), {id: +new Date(),user: userId, items: cartItems.items, totalCheckoutPrice: cartItems.totalPrice, address: userAddress}]))
   }
 
+  // set shopping cart to empty
   setItemHook({items: [], totalPrice: 0})
   localStorage.setItem('cart', JSON.stringify({items: [], totalPrice: 0}))
 
