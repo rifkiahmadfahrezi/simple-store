@@ -15,7 +15,6 @@ export default function LoginPage(){
 	const [password, setPassword] = useState('')
 
 	useEffect(() => {
-		console.log('ok')
 		if(isLogin){
 			window.location.href = window.location.origin
 		}
@@ -80,7 +79,7 @@ export default function LoginPage(){
 		      					onChange={(e) => userInputHandler(e)} 
 		      					className="py-2 px-4 border border-2-indigo-900 rounded-md" 
 		      					defaultValue={username}
-		      					placeHolder="Username..."/>
+		      					placeholder="Username..."/>
 		      			</div>
 		      			<div className="flex flex-col mb-4">
 		      				<Label style="mb-1 text-indigo-900">Password</Label>
@@ -88,7 +87,7 @@ export default function LoginPage(){
 		      					<input 
 		      						type={`${!seePassword ? `password` : `text`}`} 
 		      						className="py-2 px-4 rounded-l-md w-[90%] border border-2-indigo-900" 
-		      						placeHolder="Password..."
+		      						placeholder="Password..."
 		      						defaultValue={password} 
 		      						onChange={(e) => passwordInputHandler(e)} />
 
