@@ -62,10 +62,6 @@ export default function Transaction(){
 
 	}, [])
 
-	useEffect(()=> {
-		console.log(historyExist)
-	}, [historyExist])
-
 
 	useEffect(()=> {
 		if(!isLogin){
@@ -76,39 +72,35 @@ export default function Transaction(){
 	return (
 <>
 	<Navbar/>
+
+	<div className="container mx-auto w-[90%] sm:w-full mt-5 cursor-pointer hover:bg-white">
+				<button type="button" onClick={()=> window.history.back()} ><i className='text-lg bx bx-arrow-back'></i></button>
+			</div>
+
 	<div className="min-h-screen container mt-9 mx-auto container mx-auto w-[90%] md:w-full">
 	<div>
 
 	{historyExist ?
 
+		<>
+
+		<h3 className="text-lg text-indigo-900 mb-5 font-semibold">Total {transactionHistory.filter(acc => Number(acc.user) === Number(userId))?.length} transactions</h3>
+
+
 		<Accordion>
 		{(accordionData?.length > 0) ? accordionData.filter(acc => Number(acc.content.user) === Number(userId))
-		.map((acc) => {
+		.sort().reverse().map((acc) => {
 		return(
 			<div key={acc.id}>
 				<Accordion.Trigger 
 					toggleAccordion={toggleAccordion}
 					isOpen={accordion.isOpen && accordion.target == acc.id}
 					target={acc.id}>
-					{(accordion.isOpen && accordion.target == acc.id) ? 
-						<div className="flex flex-col text-left">
-							<span 
-								className="font-semibold text-lg mb-1 text-indigo-900">
-								Total: ${convertDollar(acc.content.totalCheckoutPrice || 0)}
-							</span>
-							<span
-								className="text-slate-500 text-md">
-								({numberToText.convertToText(acc.content.totalCheckoutPrice || 0, {case: 'lowerCase'})})
-							</span>
-						</div>
-						: <span>{acc.text}</span>
-					}
-					
+						<span>{acc.text}</span>
 				</Accordion.Trigger>
 			{(accordion.isOpen && accordion.target == acc.id) ? 
 			<>
-				{console.log(acc.content.address)}
-				<article className="flex flex-col bg-indigo-50 mb-5 p-4 rounded-md">
+				<article className="flex flex-col bg-indigo-50 mb-5 p-3">
 					<h3 className="text-bold text-indigo-900 text-xl mb-1">Sent to:</h3>
 					<p className="text-md font-semibold">{acc.content.address.fullName}</p>
 					<p className="text-md">{acc.content.address.email}</p>
@@ -164,6 +156,16 @@ export default function Transaction(){
 					</div>	
 				
 				</Accordion.Content>
+				<div className="flex flex-col text-left p-3 bg-indigo-100">
+					<span 
+						className="font-semibold text-lg mb-1 text-indigo-900">
+						Total: ${convertDollar(acc.content.totalCheckoutPrice || 0)}
+					</span>
+					<span
+						className="text-slate-500 text-md">
+						({numberToText.convertToText(acc.content.totalCheckoutPrice || 0, {case: 'lowerCase'})})
+					</span>
+				</div>
 				</>
 				: null
 			}
@@ -175,6 +177,7 @@ export default function Transaction(){
 		: <p className="text-slate-500 my-4 text-center">There is no transaction history</p>
 	}
 		</Accordion>
+	</>
 	: <p className="text-slate-500 my-4 text-center">There is no transaction history</p>
 }
 	</div>

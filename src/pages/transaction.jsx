@@ -55,6 +55,11 @@ export default function Transaction(){
 	return (
 <>
 	<Navbar/>
+
+	<div className="container mx-auto w-[90%] sm:w-full mt-5 cursor-pointer hover:bg-white">
+				<button type="button" onClick={()=> window.history.back()} ><i className='text-lg bx bx-arrow-back'></i></button>
+			</div>
+
 	<div className="min-h-screen container mt-9 mx-auto container mx-auto w-[90%] md:w-full">
 	<div>
 		<article className="flex flex-col bg-indigo-50 mb-5 p-4 rounded-md">
@@ -74,12 +79,13 @@ export default function Transaction(){
 					isOpen={isOpen}>
 					<span>{item.text}</span>
 				</Accordion.Trigger>
+				{console.log(isOpen)}
 				<Accordion.Content 
 					isOpen={isOpen}>
 				
 					<div className="flex flex-col">
 						{item.content?.length > 0 ? 
-							item.content.map((item, index) => {
+							item.content.sort().reverse().map((item, index) => {
 								return (
 									<div 
 									key={`${item.id}-${index}`} 
