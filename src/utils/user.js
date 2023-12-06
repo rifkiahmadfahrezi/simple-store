@@ -16,6 +16,21 @@ const userData = [
 	},
 	{
 		id: 2,
+		fullName: 'Budi',
+		address: {
+			country: 'indonesia',
+			fullAddress: 'Jl jalan',
+			city: 'Bandung',
+			state: 'west java',
+			zip: '8079',
+		},
+		email: 'budi@simplestore.com',
+		username: 'user',
+		password: 'user12345', // min 8 characters
+		type: 'buyer' // type = admin or buyer
+	},
+	{
+		id: 3,
 		fullName: 'admin',
 		username: 'admin',
 		email: 'admin@simplestore.com',
