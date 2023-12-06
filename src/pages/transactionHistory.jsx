@@ -22,11 +22,12 @@ export default function Transaction(){
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')) ?? false)
 	const [ userInfo, setUserInfo ] = useState({})
     const [ modal, setModal ] = useState({isActive: false, target: null})
-    const[ accordion, setAccordion ] = useState({isOpen: false, target: null})
+    const [ accordion, setAccordion ] = useState({isOpen: false, target: null})
+    const [historyExist, setHistoryExist] = useState(false)
 
 	const userId = sessionStorage.getItem('userId')
 
-	const transactionHistory = JSON.parse(localStorage.getItem('history') ?? [])
+	const transactionHistory = JSON.parse(localStorage.getItem('history')) || []
 
     const [accordionData, setAccordionData] = useState([])
 
@@ -53,7 +54,17 @@ export default function Transaction(){
 		})
 		setAccordionData(data)
 
+		if (transactionHistory.filter(his => Number(his.user) === Number(userId)).length <= 0){
+			setHistoryExist(false)
+		}else{
+			setHistoryExist(true)
+		}
+
 	}, [])
+
+	useEffect(()=> {
+		console.log(historyExist)
+	}, [historyExist])
 
 
 	useEffect(()=> {
@@ -68,8 +79,11 @@ export default function Transaction(){
 	<div className="min-h-screen container mt-9 mx-auto container mx-auto w-[90%] md:w-full">
 	<div>
 
+	{historyExist ?
+
 		<Accordion>
-		{accordionData?.length > 0 && accordionData.map((acc) => {
+		{(accordionData?.length > 0) ? accordionData.filter(acc => Number(acc.content.user) === Number(userId))
+		.map((acc) => {
 		return(
 			<div key={acc.id}>
 				<Accordion.Trigger 
@@ -80,11 +94,11 @@ export default function Transaction(){
 						<div className="flex flex-col text-left">
 							<span 
 								className="font-semibold text-lg mb-1 text-indigo-900">
-								Total: ${convertDollar(acc.content.price || 0)}
+								Total: ${convertDollar(acc.content.totalCheckoutPrice || 0)}
 							</span>
 							<span
 								className="text-slate-500 text-md">
-								({numberToText.convertToText(acc.content.price || 0, {case: 'lowerCase'})})
+								({numberToText.convertToText(acc.content.totalCheckoutPrice || 0, {case: 'lowerCase'})})
 							</span>
 						</div>
 						: <span>{acc.text}</span>
@@ -92,10 +106,19 @@ export default function Transaction(){
 					
 				</Accordion.Trigger>
 			{(accordion.isOpen && accordion.target == acc.id) ? 
+			<>
+				{console.log(acc.content.address)}
+				<article className="flex flex-col bg-indigo-50 mb-5 p-4 rounded-md">
+					<h3 className="text-bold text-indigo-900 text-xl mb-1">Sent to:</h3>
+					<p className="text-md font-semibold">{acc.content.address.fullName}</p>
+					<p className="text-md">{acc.content.address.email}</p>
+					<p className="text-md">
+					{acc.content.address.address.fullAddress}, {acc.content.address.address.city} ,{acc.content.address.address.zip}, {acc.content.address.address.state}, {acc.content.address.address.country}</p>
+				</article>
+
 				<Accordion.Content 
 					isOpen={accordion.isOpen}
 					>
-				
 					<div className="flex flex-col">
 						{acc.content.items?.length > 0 ? 
 							acc.content.items.map((item, index, arr) => {
@@ -141,14 +164,19 @@ export default function Transaction(){
 					</div>	
 				
 				</Accordion.Content>
+				</>
 				: null
 			}
 			</div>
 
 
 		)
-	})}
-			</Accordion>
+	})
+		: <p className="text-slate-500 my-4 text-center">There is no transaction history</p>
+	}
+		</Accordion>
+	: <p className="text-slate-500 my-4 text-center">There is no transaction history</p>
+}
 	</div>
 			
 	</div>
