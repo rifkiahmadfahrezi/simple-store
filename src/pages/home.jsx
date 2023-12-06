@@ -288,7 +288,7 @@ export default function Home(){
 
           : <div className="container min-h-screen mx-auto text-center  w-[90%] sm:w-full mt-8">
             {error.img !== null && <img width="350px" className="mx-auto object-contain mb-4" src={`/img/${error.img}`} alt="image error"/>}
-            <p className="text-[30px] font-montserrat text-indigo-900">{error.message}</p>
+            <p className="text-[20px] font-montserrat text-indigo-900">{error.message}</p>
           </div>
         }
 
