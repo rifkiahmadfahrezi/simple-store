@@ -13,17 +13,25 @@ import { ShoppingCart, addNewItem, decreaseItem,removeItem } from  '../context/S
 
 export default function Home(){
 
-    const [categories, setCategories] = useState([])
-    const [productsData, setProductsData] = useState([])
-    const [error, setError] = useState({isError: false, message: '', img: null})
-    const [selectedCategory, setSelectedCategory] = useState(null)
+    const [  categories, setCategories ] = useState([])
+    const [ productsData, setProductsData ] = useState([])
+    const [ error, setError ] = useState({isError: false, message: '', img: null})
+    const [ selectedCategory, setSelectedCategory ] = useState(null)
     const [ isCategoryExist, setIsCategoryExist ] = useState(false)
+    const [ showData, setShowData ] = useState({perPage: 20, currentPage: 1})
+    const [ productsTotalLength, setProductsTotalLength ] = useState(0)
 
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keyword = searchParams.get('q') || null
-    const categoryParams = searchParams.get('category') || null
+    const currentPage = searchParams.get('page') || 1
+    const categoryParams = searchParams.get('category') || 'all'
 
     const { cartItems, setCartItems } = useContext(ShoppingCart)
+
+    async function getProducts(data){
+      const response = await data
+      setProductsData(response.products)
+    }
 
     useEffect(()=>{
       const categoryExist = categories.find(category => category === categoryParams) ?? false
@@ -32,17 +40,14 @@ export default function Home(){
 
 
     useEffect(()=> {
-      async function getProducts(data){
-        const response = await data
-        setProductsData(response.products)
-      }
       if (isCategoryExist){
         if(categoryParams !== 'all'){
           setSelectedCategory(categoryParams)
           getProductByCategory(categoryParams)
         }
       }else{
-        getProducts(product.getAllProducts())
+        const skip = (Number(showData.perPage) * Number(currentPage)) - Number(showData.perPage)
+        getProducts(product.getAllProducts(Number(showData.perPage)), skip)
         .catch(error => {
           console.error(error)
 
@@ -60,14 +65,16 @@ export default function Home(){
 
     useEffect(()=> {
 
+
+
       async function getCategories(data){
         const response = await data
         setCategories(['all', ...response])
       }
-      async function getProducts(data){
+
+      async function getProductsLength(data){
         const response = await data
-        console.log(response.products.length)
-        setProductsData(response.products)
+        setProductsTotalLength(response.products.length)
       }
 
       // get all product categories
@@ -84,8 +91,77 @@ export default function Home(){
         setTimeout(()=> location.reload(), 2500)
       }) 
 
+
+      getProductsLength(product.getAllProducts(100))
+        .catch(error => {
+          console.error(error)
+
+          Swal.fire({
+            title: 'Someting went wrong :(',
+            text: 'Fail to get products length data from server, please wait!',
+            timer: 2500,
+            timerProgressBar: true,
+          })
+
+          setTimeout(()=> location.reload(), 2500)
+        })
+
+      // if(Number(currentPage) >= 1 && Number(currentPage) <= (productsData.length / showData.perPage)){
+      //   setShowData({perPage: 20, currentPage: currentPage})
+      // }
+
       if(categoryParams === null && categoryParams == '' && categoryParams === 'all') {
-        getProducts(product.getAllProducts())
+
+        const skip = (Number(showData.perPage) * Number(currentPage)) - Number(showData.perPage)
+        getProducts(product.getAllProducts(Number(showData.perPage)), skip)
+        .catch(error => {
+          console.error(error)
+
+          Swal.fire({
+            title: 'Someting went wrong :(',
+            text: 'Fail to get products data from server, please wait!',
+            timer: 2500,
+            timerProgressBar: true,
+          })
+
+          setTimeout(()=> location.reload(), 2500)
+        })
+        
+      }else{
+        if(productsData.length / showData.perPage > 0){
+          if(Number(currentPage) > (productsData.length / showData.perPage)){
+            setError({isError: true, message: `page ${currentPage} not found, click our logo to refresh`, img: null})
+          }
+        }
+      }
+      // else{
+      //   getProductByCategory(categoryParams)
+      //   setProductsTotalLength(productsData.length)
+      // }
+
+    },[])
+
+    useEffect(()=> {
+      const skip = (Number(showData.perPage) * Number(currentPage)) - Number(showData.perPage)
+
+      if(categoryParams !== 'all'){
+        console.log('1')
+        getProducts(product.getProductByCategory(categoryParams,showData.perPage, skip))
+        .catch(error => {
+          console.error(error)
+
+          Swal.fire({
+            title: 'Someting went wrong :(',
+            text: 'Fail to get products data from server, please wait!',
+            timer: 2500,
+            timerProgressBar: true,
+          })
+
+          setTimeout(()=> location.reload(), 2500)
+        })
+
+      }else{
+        getProducts(product.getAllProducts(showData.perPage, skip))
         .catch(error => {
           console.error(error)
 
@@ -100,15 +176,12 @@ export default function Home(){
         })
       }
 
-    },[])
+    }, [showData])
 
 
     function getProductByCategory(category){
-      setProductsData([])
-      async function getProducts(data){
-        const response = await data
-        setProductsData(response.products)
-      }
+
+      setProductsData([]) //  for making skeleton loading
       getProducts(product.getProductByCategory(category))
       .catch((error) => {
         console.error(error)
@@ -121,31 +194,29 @@ export default function Home(){
 
         setTimeout(()=> location.reload(), 2500)
       })
+       // setProductsTotalLength(productsData.length)
     }
 
     function dropdownItemClickHandler(e){
       const category = e.target.dataset.category
 
       const categoryExist = categories.find(ctgry => ctgry === category) ?? false
-      console.log(categoryExist)
       !categoryExist ? setIsCategoryExist(false) : setIsCategoryExist(true)
 
       setSearchParams(prev => {
         prev.set('category', category)
+        prev.set('page', 1) // reset current page to 1
         return prev
       },{ replace: true})
 
       setSelectedCategory(category)
 
-      async function getProducts(data){
-        const response = await data
-        setProductsData(response.products)
-      }
-
       if ( category !== 'all' ){
          getProductByCategory(category)
       }else{
-        getProducts(product.getAllProducts(category))
+        const skip = (Number(showData.perPage) * Number(currentPage)) - Number(showData.perPage)
+
+        getProducts(product.getAllProducts(showData.perPage, skip))
         .catch((error) => {
           console.error(error)
           Swal.fire({
@@ -227,6 +298,41 @@ export default function Home(){
         return cards
     }
 
+    function numberPageClickHandler(e){
+      window.scrollTo(0,0)
+      const activePage = e.target.dataset.activepage
+      setSearchParams(prev => {
+        prev.set('page', activePage)
+        return prev
+      },{ replace: true})
+
+      setProductsData([])
+      setShowData({perPage: 20, currentPage: activePage})
+
+    }
+
+    function nextPageClickHandler(){
+      window.scrollTo(0,0)
+      const nextPage = Number(currentPage) + 1
+      setSearchParams(prev => {
+        prev.set('page', nextPage)
+        return prev
+      },{ replace: true})
+      setProductsData([])
+      setShowData({perPage: 20, currentPage: nextPage})
+    }
+    function prevPageClickHandler(){
+      window.scrollTo(0,0)
+      const prevPage = Number(currentPage) - 1
+      setSearchParams(prev => {
+        prev.set('page', prevPage)
+        return prev
+      },{ replace: true})
+      setProductsData([])
+      setShowData({perPage: 20, currentPage: prevPage})
+
+    }
+
     return(
       <>
         <Navbar setErrorState={setError}/>
@@ -287,12 +393,17 @@ export default function Home(){
         </div>
 
           : <div className="container min-h-screen mx-auto text-center  w-[90%] sm:w-full mt-8">
-            {error.img !== null && <img width="350px" className="mx-auto object-contain mb-4" src={`/img/${error.img}`} alt="image error"/>}
+            {error.img !== null ? <img width="350px" className="mx-auto object-contain mb-4" src={`/img/${error.img}`} alt="image error"/> : null}
             <p className="text-[20px] font-montserrat text-indigo-900">{error.message}</p>
           </div>
         }
 
-        <Pagination dataLength="100" />
+        <Pagination 
+          activePage={currentPage}
+          dataLength={categoryParams === 'all' ? productsTotalLength : productsData.length} 
+          numberPageClickHandler={numberPageClickHandler} 
+          nextPageClickHandler={nextPageClickHandler} 
+          prevPageClickHandler={prevPageClickHandler} />
 
         <Footer/>
 
