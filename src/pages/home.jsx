@@ -22,8 +22,8 @@ export default function Home(){
     const [ productsTotalLength, setProductsTotalLength ] = useState(0)
 
     const [searchParams, setSearchParams] = useSearchParams({q:''})
-    const keyword = searchParams.get('q') || null
-    const currentPage = searchParams.get('page') || 1
+    const keywordParams = searchParams.get('q') || null
+    const currentPageParams = searchParams.get('page') || 1
     const categoryParams = searchParams.get('category') || 'all'
 
     const { cartItems, setCartItems } = useContext(ShoppingCart)
@@ -46,27 +46,24 @@ export default function Home(){
           getProductByCategory(categoryParams)
         }
       }else{
-        const skip = (Number(showData.perPage) * Number(currentPage)) - Number(showData.perPage)
-        getProducts(product.getAllProducts(Number(showData.perPage)), skip)
-        .catch(error => {
-          console.error(error)
+        // const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
+        // getProducts(product.getAllProducts(Number(showData.perPage)), skip)
+        // .catch(error => {
+        //   console.error(error)
 
-          Swal.fire({
-            title: 'Someting went wrong :(',
-            text: 'Fail to get products data from server, please wait!',
-            timer: 2500,
-            timerProgressBar: true,
-          })
+        //   Swal.fire({
+        //     title: 'Someting went wrong :(',
+        //     text: 'Fail to get products data from server, please wait!',
+        //     timer: 2500,
+        //     timerProgressBar: true,
+        //   })
 
-          setTimeout(()=> location.reload(), 2500)
-        })
+        //   setTimeout(()=> location.reload(), 2500)
+        // })
       }
     }, [isCategoryExist])
 
     useEffect(()=> {
-
-
-
       async function getCategories(data){
         const response = await data
         setCategories(['all', ...response])
@@ -106,46 +103,48 @@ export default function Home(){
           setTimeout(()=> location.reload(), 2500)
         })
 
-      // if(Number(currentPage) >= 1 && Number(currentPage) <= (productsData.length / showData.perPage)){
-      //   setShowData({perPage: 20, currentPage: currentPage})
-      // }
+      // if(categoryParams === 'all') {
+      //   const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
+      //   console.log('sip')
+      //   getProducts(product.getAllProducts(Number(showData.perPage)), skip)
+      //   .catch(error => {
+      //     console.error(error)
 
-      if(categoryParams === null && categoryParams == '' && categoryParams === 'all') {
+      //     Swal.fire({
+      //       title: 'Someting went wrong :(',
+      //       text: 'Fail to get products data from server, please wait!',
+      //       timer: 2500,
+      //       timerProgressBar: true,
+      //     })
 
-        const skip = (Number(showData.perPage) * Number(currentPage)) - Number(showData.perPage)
-        getProducts(product.getAllProducts(Number(showData.perPage)), skip)
-        .catch(error => {
-          console.error(error)
-
-          Swal.fire({
-            title: 'Someting went wrong :(',
-            text: 'Fail to get products data from server, please wait!',
-            timer: 2500,
-            timerProgressBar: true,
-          })
-
-          setTimeout(()=> location.reload(), 2500)
-        })
+      //     setTimeout(()=> location.reload(), 2500)
+      //   })
         
-      }else{
-        if(productsData.length / showData.perPage > 0){
-          if(Number(currentPage) > (productsData.length / showData.perPage)){
-            setError({isError: true, message: `page ${currentPage} not found, click our logo to refresh`, img: null})
-          }
-        }
-      }
-      // else{
-      //   getProductByCategory(categoryParams)
-      //   setProductsTotalLength(productsData.length)
       // }
-
     },[])
 
     useEffect(()=> {
-      const skip = (Number(showData.perPage) * Number(currentPage)) - Number(showData.perPage)
+      const pages = (productsTotalLength / showData.perPage)
+      console.log(productsTotalLength)
+      // if page params in url is not exceed the max page
+      if(Number(currentPageParams) >= 1 && Number(currentPageParams) <= pages){
+        setShowData({perPage: 20, currentPage: Number(currentPageParams)})
+      }else{
+        if(categoryParams === 'all') return
+        if(productsData.length >= showData.perPage){
+          setShowData({perPage: 20, currentPage: 1})
+          setError({
+            isError: true,
+            message: `Sorry :), can't display product at page number ${currentPageParams}, there is only ${pages} ${pages > 1 ? 'pages' : 'page'}`,
+          })
+        }
+      }
+    }, [productsTotalLength])
+
+    useEffect(()=> {
+      const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
 
       if(categoryParams !== 'all'){
-        console.log('1')
         getProducts(product.getProductByCategory(categoryParams,showData.perPage, skip))
         .catch(error => {
           console.error(error)
@@ -214,8 +213,8 @@ export default function Home(){
       if ( category !== 'all' ){
          getProductByCategory(category)
       }else{
-        const skip = (Number(showData.perPage) * Number(currentPage)) - Number(showData.perPage)
-
+        const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
+        setProductsData([]) //  for making skeleton loading
         getProducts(product.getAllProducts(showData.perPage, skip))
         .catch((error) => {
           console.error(error)
@@ -228,6 +227,8 @@ export default function Home(){
 
           setTimeout(()=> location.reload(), 2500)
         })
+
+        setProductsTotalLength(100)
       } 
     }
 
@@ -249,13 +250,22 @@ export default function Home(){
     }
 
     function displayProductCards(){
-      const cards = productsData.filter((item,index,arr) => {
-          if(keyword !== null) {
-            return item.title.toLowerCase().includes(keyword?.toLowerCase()) || item.brand.toLowerCase().includes(keyword?.toLowerCase())
-          }else{
-            return arr
-          }
-        })?.map((item, index, arr) => {
+      // if user type at the searchbox
+      // set the productsData to all products 
+      // if(keywordParams !== null){
+      //   getProducts(product.searchProduct(keywordParams))
+      //   .catch((error) => {
+      //     console.error(error)
+      //     Swal.fire({
+      //       title: 'Someting went wrong :(',
+      //       text: 'Fail to get products data from server, please wait!',
+      //       timer: 2500,
+      //       timerProgressBar: true,
+      //     })
+      //    })
+      // }
+
+      const cards = productsData.map((item, index, arr) => {
           return (
             <Card 
               key={item.id} 
@@ -284,13 +294,13 @@ export default function Home(){
           )
         })
 
-        const isProductFound = productsData.find(item => item.title.toLowerCase().includes(keyword?.toLowerCase()) || item.brand.toLowerCase().includes(keyword?.toLowerCase())) ?? false
+        const isProductFound = productsData.find(item => item.title.toLowerCase().includes(keywordParams?.toLowerCase()) || item.brand.toLowerCase().includes(keywordParams?.toLowerCase())) ?? false
 
 
         if(!isProductFound && cards.length <= 0){
           setError({
             isError: true,
-            message: `Product '${keyword}' is not found, please input keyword correctly`,
+            message: `Product '${keywordParams}' is not found, please input keywordParams correctly`,
             img: 'product-not-found.svg'
           })
         }
@@ -313,7 +323,7 @@ export default function Home(){
 
     function nextPageClickHandler(){
       window.scrollTo(0,0)
-      const nextPage = Number(currentPage) + 1
+      const nextPage = Number(currentPageParams) + 1
       setSearchParams(prev => {
         prev.set('page', nextPage)
         return prev
@@ -323,7 +333,7 @@ export default function Home(){
     }
     function prevPageClickHandler(){
       window.scrollTo(0,0)
-      const prevPage = Number(currentPage) - 1
+      const prevPage = Number(currentPageParams) - 1
       setSearchParams(prev => {
         prev.set('page', prevPage)
         return prev
@@ -347,7 +357,7 @@ export default function Home(){
               : ''} products
             </h2>
 
-            {(keyword !== null)
+            {(keywordParams !== null)
               ? <button 
                   onClick={(e)=> resetProductData(e)}
                   className="py-1 px-2 text-sm font-montserrat capitalize bg-indigo-50 rounded-md flex items-center">
@@ -393,13 +403,15 @@ export default function Home(){
         </div>
 
           : <div className="container min-h-screen mx-auto text-center  w-[90%] sm:w-full mt-8">
-            {error.img !== null ? <img width="350px" className="mx-auto object-contain mb-4" src={`/img/${error.img}`} alt="image error"/> : null}
+            {(error.img !== undefined) ? 
+              <img width="350px" className="mx-auto object-contain mb-4" src={`/img/${error.img}`} alt="image error"/> 
+              : null}
             <p className="text-[20px] font-montserrat text-indigo-900">{error.message}</p>
           </div>
         }
 
         <Pagination 
-          activePage={currentPage}
+          activePage={currentPageParams}
           dataLength={categoryParams === 'all' ? productsTotalLength : productsData.length} 
           numberPageClickHandler={numberPageClickHandler} 
           nextPageClickHandler={nextPageClickHandler} 
