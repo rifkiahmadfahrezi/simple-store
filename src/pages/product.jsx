@@ -54,6 +54,8 @@ export default function Product(){
 						<ProductDetails.information 
 							title={products.title} 
 							price={products.price} 
+							discount={products.discountPercentage}
+							actualPrice={products.actualPrice} 
 							brand={products.brand} 
 							id={products.id} 
 							stock={products.stock} 

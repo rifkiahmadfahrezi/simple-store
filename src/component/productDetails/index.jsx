@@ -1,6 +1,9 @@
 import React from 'react'
 import Link from '../elements/link/Link'
 
+import { getDiscountedPrice } from '../../utils/tools.js'
+
+
 export default function ProductDetails({id = 1, children}){
 	return(
 		<div className="container flex-col md:flex-row mx-auto mx-auto w-[90%] sm:w-full mt-6 flex justify-between gap-[25px]">
@@ -23,7 +26,7 @@ export function thumbnail({src, discount = 0, children}){
 	)
 }
 
-export function information({title, price, description, brand, id, stock ,addToCartHandler}){
+export function information({title, price, discount, actualPrice, description, brand, id, stock ,addToCartHandler}){
 	return (
 		<div className="w-full flex flex-col justify-between items-start mt-4">
 			<div>
@@ -32,9 +35,9 @@ export function information({title, price, description, brand, id, stock ,addToC
 					{title}</h2>
 				<div className="flex items-end justify-between">
 					<span>
-						<p 
-						className="font-montserrat font-semibold text-[30px] mb-2">
-						${price}</p>
+						<span className="text-2xl text-indigo-900 mr-1">
+                      	${getDiscountedPrice(discount,price)}</span>
+                      	<span className="line-through text-md text-indigo-300">${price}</span>
 						<p>
 						<i className='text-indigo-900 bx bxs-check-circle'></i>
 						{brand}</p>
