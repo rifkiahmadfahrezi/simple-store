@@ -1,23 +1,26 @@
-import React from 'react'
+import React, { useState} from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 export default function Searchbox({setErrorState = undefined}){
 
 	const [searchParams, setSearchParams] = useSearchParams({q: ''})
+	const [ keywordValue, setKeywordValue ] = useState('')
 	const keyword = searchParams.get('q') ?? false
 
 	function searchInputChangeHandler(e){
 		const value = e.target.value
-		if (setErrorState !== undefined) setErrorState({isError: false,message: '', img: null})
-		setSearchParams(prev => {
-			prev.set('q', value.toLowerCase())
-			return prev
-		}, {replace: true})
+		setKeywordValue(value)
 
 	}
 
 	function searchSubmitHandler(e){
       e.preventDefault()
+
+      if (setErrorState !== undefined) setErrorState({isError: false,message: '', img: null})
+	  setSearchParams(prev => {
+      prev.set('q', keywordValue.toLowerCase())
+	  	return prev
+	  }, {replace: true})
 
       const curentUrl = window.location.href
       const originUrl = window.location.origin
