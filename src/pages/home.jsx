@@ -19,7 +19,7 @@ export default function Home(){
     const [ selectedCategory, setSelectedCategory ] = useState(null)
     const [ isCategoryExist, setIsCategoryExist ] = useState(false)
     const [ showData, setShowData ] = useState({perPage: 20, currentPage: 1})
-    const [ productsTotalLength, setProductsTotalLength ] = useState(0)
+    const [ productsTotalLength, setProductsTotalLength ] = useState(100)
 
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keywordParams = searchParams.get('q') || null
@@ -33,45 +33,23 @@ export default function Home(){
       setProductsData(response.products)
     }
 
-    useEffect(()=>{
-      const categoryExist = categories.find(category => category === categoryParams) ?? false
+    function checkIsCategoryExist(category){
+      const categoryExist = categories.find(ctgry => ctgry === category) ?? false
+      console.log(categoryExist)
       !categoryExist ? setIsCategoryExist(false) : setIsCategoryExist(true)
-    },[categories])
+      return !categoryExist ? false : true
+    }
 
-
-    useEffect(()=> {
-      if (isCategoryExist){
-        if(categoryParams !== 'all'){
-          setSelectedCategory(categoryParams)
-          getProductByCategory(categoryParams)
-        }
-      }else{
-        // const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
-        // getProducts(product.getAllProducts(Number(showData.perPage)), skip)
-        // .catch(error => {
-        //   console.error(error)
-
-        //   Swal.fire({
-        //     title: 'Someting went wrong :(',
-        //     text: 'Fail to get products data from server, please wait!',
-        //     timer: 2500,
-        //     timerProgressBar: true,
-        //   })
-
-        //   setTimeout(()=> location.reload(), 2500)
-        // })
+    useEffect(()=>{
+      if(categoryParams !== 'all'){
+        getProductByCategory(categoryParams)
       }
-    }, [isCategoryExist])
+    },[categories])
 
     useEffect(()=> {
       async function getCategories(data){
         const response = await data
         setCategories(['all', ...response])
-      }
-
-      async function getProductsLength(data){
-        const response = await data
-        setProductsTotalLength(response.products.length)
       }
 
       // get all product categories
@@ -88,67 +66,47 @@ export default function Home(){
         setTimeout(()=> location.reload(), 2500)
       }) 
 
-
-      getProductsLength(product.getAllProducts(100))
-        .catch(error => {
-          console.error(error)
-
-          Swal.fire({
-            title: 'Someting went wrong :(',
-            text: 'Fail to get products length data from server, please wait!',
-            timer: 2500,
-            timerProgressBar: true,
-          })
-
-          setTimeout(()=> location.reload(), 2500)
-        })
-
-      // if(categoryParams === 'all') {
-      //   const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
-      //   console.log('sip')
-      //   getProducts(product.getAllProducts(Number(showData.perPage)), skip)
-      //   .catch(error => {
-      //     console.error(error)
-
-      //     Swal.fire({
-      //       title: 'Someting went wrong :(',
-      //       text: 'Fail to get products data from server, please wait!',
-      //       timer: 2500,
-      //       timerProgressBar: true,
-      //     })
-
-      //     setTimeout(()=> location.reload(), 2500)
-      //   })
-        
-      // }
     },[])
 
     useEffect(()=> {
+      console.log(productsData)
+    }, [productsData])
+
+    useEffect(()=> {
       const pages = (productsTotalLength / showData.perPage)
-      console.log(productsTotalLength)
       // if page params in url is not exceed the max page
       if(Number(currentPageParams) >= 1 && Number(currentPageParams) <= pages){
-        setShowData({perPage: 20, currentPage: Number(currentPageParams)})
+        // setShowData({perPage: 20, currentPage: Number(currentPageParams)})
+        setError({
+          isError: false,
+          message: '',
+        })
       }else{
-        if(categoryParams === 'all') return
-        if(productsData.length >= showData.perPage){
-          setShowData({perPage: 20, currentPage: 1})
+        if(productsTotalLength <= showData.perPage){
+
           setError({
             isError: true,
-            message: `Sorry :), can't display product at page number ${currentPageParams}, there is only ${pages} ${pages > 1 ? 'pages' : 'page'}`,
+            message: `there is no page with number ${currentPageParams}`,
           })
+
         }
       }
     }, [productsTotalLength])
 
     useEffect(()=> {
-      const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
+      getProductByCategory(categoryParams)
+    }, [showData])
 
-      if(categoryParams !== 'all'){
-        getProducts(product.getProductByCategory(categoryParams,showData.perPage, skip))
-        .catch(error => {
+
+    function getProductByCategory(category){
+      // if selected category is exist and category in url is not all
+      // get product by category
+      if(checkIsCategoryExist(category)&& category !== 'all'){
+        setProductsData([]) //  for making skeleton loading
+        console.log('ok')
+        getProducts(product.getProductByCategory(category))
+        .catch((error) => {
           console.error(error)
-
           Swal.fire({
             title: 'Someting went wrong :(',
             text: 'Fail to get products data from server, please wait!',
@@ -158,8 +116,10 @@ export default function Home(){
 
           setTimeout(()=> location.reload(), 2500)
         })
-
       }else{
+        const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
+
+        setProductsData([]) //  for making skeleton loading
         getProducts(product.getAllProducts(showData.perPage, skip))
         .catch(error => {
           console.error(error)
@@ -174,26 +134,6 @@ export default function Home(){
           setTimeout(()=> location.reload(), 2500)
         })
       }
-
-    }, [showData])
-
-
-    function getProductByCategory(category){
-
-      setProductsData([]) //  for making skeleton loading
-      getProducts(product.getProductByCategory(category))
-      .catch((error) => {
-        console.error(error)
-        Swal.fire({
-          title: 'Someting went wrong :(',
-          text: 'Fail to get products data from server, please wait!',
-          timer: 2500,
-          timerProgressBar: true,
-        })
-
-        setTimeout(()=> location.reload(), 2500)
-      })
-       // setProductsTotalLength(productsData.length)
     }
 
     function dropdownItemClickHandler(e){
@@ -310,6 +250,7 @@ export default function Home(){
 
     function numberPageClickHandler(e){
       window.scrollTo(0,0)
+      if(!isCategoryExist) searchParams.delete('category')
       const activePage = e.target.dataset.activepage
       setSearchParams(prev => {
         prev.set('page', activePage)
@@ -323,6 +264,7 @@ export default function Home(){
 
     function nextPageClickHandler(){
       window.scrollTo(0,0)
+      if(!isCategoryExist) searchParams.delete('category')
       const nextPage = Number(currentPageParams) + 1
       setSearchParams(prev => {
         prev.set('page', nextPage)
@@ -333,6 +275,7 @@ export default function Home(){
     }
     function prevPageClickHandler(){
       window.scrollTo(0,0)
+      if(!isCategoryExist) searchParams.delete('category')
       const prevPage = Number(currentPageParams) - 1
       setSearchParams(prev => {
         prev.set('page', prevPage)
@@ -412,7 +355,7 @@ export default function Home(){
 
         <Pagination 
           activePage={currentPageParams}
-          dataLength={categoryParams === 'all' ? productsTotalLength : productsData.length} 
+          dataLength={(isCategoryExist && categoryParams !== 'all') ? productsData.length : productsTotalLength}
           numberPageClickHandler={numberPageClickHandler} 
           nextPageClickHandler={nextPageClickHandler} 
           prevPageClickHandler={prevPageClickHandler} />
