@@ -23,10 +23,11 @@ export default function Home(){
 
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keywordParams = searchParams.get('q') || null
-    const currentPageParams = searchParams.get('page') || 1
+    const currentPageParams = !isNaN(searchParams.get('page'))? searchParams.get('page') : 1 // check if current page in params is not a number
     const categoryParams = searchParams.get('category') || 'all'
 
     const { cartItems, setCartItems } = useContext(ShoppingCart)
+
 
     async function getProducts(data){
       const response = await data
@@ -35,13 +36,45 @@ export default function Home(){
 
     function checkIsCategoryExist(category){
       const categoryExist = categories.find(ctgry => ctgry === category) ?? false
-      console.log(categoryExist)
       !categoryExist ? setIsCategoryExist(false) : setIsCategoryExist(true)
       return !categoryExist ? false : true
     }
 
+    function searchProduct(){
+        setProductsData([]) // for make skeleton loading
+
+        setSearchParams(prev => {
+          prev.set('page', 1) // set currentPage to 1
+          return prev
+        }, {replace: true})
+
+        if(categoryParams !== 'all' && isCategoryExist){
+          const filteredProductsData = productsData.filter(item => item.title.toLowerCase().includes(keywordParams?.toLowerCase()) || item.brand.toLowerCase().includes(keywordParams?.toLowerCase()))
+
+          setProductsData(filteredProductsData)
+        }else{
+          getProducts(product.searchProduct(keywordParams))
+          .catch((error) => {
+            console.error(error)
+            Swal.fire({
+              title: 'Someting went wrong :(',
+              text: 'Fail to get products data from server, please wait!',
+              timer: 2500,
+              timerProgressBar: true,
+            })
+           })
+        }
+
+    }
+
     useEffect(()=>{
-      if(categoryParams !== 'all'){
+      if(keywordParams !== null){
+        searchProduct()
+      }
+    }, [keywordParams])
+
+    useEffect(()=>{
+      if(checkIsCategoryExist(categoryParams)){
         getProductByCategory(categoryParams)
       }
     },[categories])
@@ -51,6 +84,14 @@ export default function Home(){
         const response = await data
         setCategories(['all', ...response])
       }
+
+      // if current page in url is not a number
+        if(!isNaN(Number(currentPageParams))){
+          setSearchParams(prev => {
+            prev.set('page', 1) // reset current page to 1
+            return prev
+          },{ replace: true})
+        }
 
       // get all product categories
       getCategories(product.getAllCategory())
@@ -66,32 +107,26 @@ export default function Home(){
         setTimeout(()=> location.reload(), 2500)
       }) 
 
+      // check if url contain search keyword ath the first page loaded
+      if(keywordParams !== null){
+        searchProduct()
+      }
+
     },[])
 
     useEffect(()=> {
-      console.log(productsData)
-    }, [productsData])
+      if(categoryParams !== 'all'){
+        const pages = Math.round(productsData.length / showData.perPage) || 1
 
-    useEffect(()=> {
-      const pages = (productsTotalLength / showData.perPage)
-      // if page params in url is not exceed the max page
-      if(Number(currentPageParams) >= 1 && Number(currentPageParams) <= pages){
-        // setShowData({perPage: 20, currentPage: Number(currentPageParams)})
-        setError({
-          isError: false,
-          message: '',
-        })
-      }else{
-        if(productsTotalLength <= showData.perPage){
-
+        if (Number(currentPageParams) > pages || Number(currentPageParams) < pages)
           setError({
             isError: true,
-            message: `there is no page with number ${currentPageParams}`,
+            message: `Page number ${currentPageParams} in category "${categoryParams?.split('-').join(' ')}" is not found!`,
           })
-
+        }else{
+          setError({ isError: false})
         }
-      }
-    }, [productsTotalLength])
+    }, [productsData])
 
     useEffect(()=> {
       getProductByCategory(categoryParams)
@@ -101,9 +136,9 @@ export default function Home(){
     function getProductByCategory(category){
       // if selected category is exist and category in url is not all
       // get product by category
+
       if(checkIsCategoryExist(category)&& category !== 'all'){
         setProductsData([]) //  for making skeleton loading
-        console.log('ok')
         getProducts(product.getProductByCategory(category))
         .catch((error) => {
           console.error(error)
@@ -144,6 +179,7 @@ export default function Home(){
 
       setSearchParams(prev => {
         prev.set('category', category)
+        prev.set('q', '')
         prev.set('page', 1) // reset current page to 1
         return prev
       },{ replace: true})
@@ -186,24 +222,11 @@ export default function Home(){
       // searchParams.delete('category')
       setError({isError: false,message: '', img: null})
       setSearchParams(searchParams);
+      getProductByCategory(categoryParams)
 
     }
 
     function displayProductCards(){
-      // if user type at the searchbox
-      // set the productsData to all products 
-      // if(keywordParams !== null){
-      //   getProducts(product.searchProduct(keywordParams))
-      //   .catch((error) => {
-      //     console.error(error)
-      //     Swal.fire({
-      //       title: 'Someting went wrong :(',
-      //       text: 'Fail to get products data from server, please wait!',
-      //       timer: 2500,
-      //       timerProgressBar: true,
-      //     })
-      //    })
-      // }
 
       const cards = productsData.map((item, index, arr) => {
           return (
@@ -295,16 +318,21 @@ export default function Home(){
             <h2 
               className="font-semibold font-montserrat capitalize text-indigo-900"
             >
-              our {(selectedCategory !== null && selectedCategory !== 'all') 
-              ? <span className="font-bold">{selectedCategory.split('-').join(' ') }</span>
-              : ''} products
+              {keywordParams !== null && selectedCategory !== null ?
+                <span>
+                  result for <span className="font-bold">{keywordParams}</span> in <span className="font-bold">'{selectedCategory?.split('-').join(' ')}'</span> category
+                </span>
+                : <span> 
+                    our <span className="font-bold">{(isCategoryExist && categoryParams !== 'all') ? categoryParams?.split('-').join(' ') : null}</span> products
+                  </span>
+              }
             </h2>
 
             {(keywordParams !== null)
               ? <button 
                   onClick={(e)=> resetProductData(e)}
                   className="py-1 px-2 text-sm font-montserrat capitalize bg-indigo-50 rounded-md flex items-center">
-                  show all products <i className='ml-2 bx bx-refresh'></i>
+                  show all products<i className='ml-2 bx bx-refresh'></i>
                 </button>
               : null
             }
@@ -354,8 +382,8 @@ export default function Home(){
         }
 
         <Pagination 
-          activePage={currentPageParams}
-          dataLength={(isCategoryExist && categoryParams !== 'all') ? productsData.length : productsTotalLength}
+          activePage={isNaN(Number(currentPageParams)) ? currentPageParams : 1}
+          dataLength={(isCategoryExist && categoryParams !== 'all' || keywordParams !== null) ? productsData?.length : productsTotalLength}
           numberPageClickHandler={numberPageClickHandler} 
           nextPageClickHandler={nextPageClickHandler} 
           prevPageClickHandler={prevPageClickHandler} />
