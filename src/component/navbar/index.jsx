@@ -64,13 +64,13 @@ export default function Navbar({setErrorState}){
 	return(
 	<>
 		<nav className="bg-white shadow-md w-full py-5 sticky top-0 z-[99] ">
-			<div className="container mx-auto w-[90%] sm:w-full flex flex-col sm:flex-row items-center justify-between">
+			<div className="container mx-auto w-[90%] p-1 sm:p-2 sm:w-full flex items-center justify-center sm:justify-between">
 				<Link to="/" style="items-center mb-5 sm:mb-0 hidden sm:flex">
 					<img src="/favicon/android-chrome-192x192.png" alt="logo" width="30"/>
 					<span className="font-montserrat ml-1 font-bold ">imple Store</span>
 				</Link>
 
-				<div className="flex items-center gap-1 sm:gap-[15px] mx-3">
+				<div className="flex items-center sm:gap-3 mx-3">
 					<Searchbox setErrorState={setErrorState}/>
 
 					{getCurrentPage() !== 'transaction' &&

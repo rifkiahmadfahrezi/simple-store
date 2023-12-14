@@ -14,7 +14,7 @@ export default function Footer(){
 					</div>
 					<p className="text-white">
 						&copy; 2023 created with 
-						<i className='bx bxs-heart text-red-500'></i> 
+						<i className='bx mx-1 bxs-heart text-red-500'></i> 
 						by <a className="underline" target="_blank" href="https://github.com/rifkiahmadfahrezi">Rifki ahmad fahrezi</a></p>
 				</div>
 			</div>

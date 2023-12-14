@@ -29,14 +29,14 @@ const userData = [
 		password: 'user12345', // min 8 characters
 		type: 'buyer' // type = admin or buyer
 	},
-	{
-		id: 3,
-		fullName: 'admin',
-		username: 'admin',
-		email: 'admin@simplestore.com',
-		password: 'admin12345', // min 8 characters
-		type: 'admin' // type = admin or buyer
-	}
+	// {
+	// 	id: 3,
+	// 	fullName: 'admin',
+	// 	username: 'admin',
+	// 	email: 'admin@simplestore.com',
+	// 	password: 'admin12345', // min 8 characters
+	// 	type: 'admin' // type = admin or buyer
+	// }
 ]
 
 export function getUser(id){

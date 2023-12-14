@@ -3,7 +3,7 @@ import React from 'react'
 export default function Card({to, children, style = '', discount = 0}){
 	return(
 		<a href={to} 
-			className={`rounded-lg relative bg-white shadow-md overflow-hidden ${style}`}>
+			className={`rounded-lg relative bg-white shadow-lg overflow-hidden ${style}`}>
 			{discount > 0 && <span className="absolute top-0 right-0 bg-indigo-600 p-3 text-white text-sm">- {discount}%</span>}
 			{children}
 		</a>

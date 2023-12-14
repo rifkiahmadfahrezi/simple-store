@@ -32,14 +32,15 @@ export default function Product(){
 	return(
 		<>
 			<Navbar/>
-			<div className="container mx-auto w-[90%] sm:w-full mt-5 cursor-pointer hover:bg-white">
+			<div className="container mx-auto w-[90%] sm:w-full mt-5 cursor-pointer px-5 hover:bg-white">
 				<button type="button" onClick={()=> window.history.back()} ><i className='text-lg bx bx-arrow-back'></i></button>
 			</div>
-			<div className="min-h-screen">
+			<div className="min-h-screen px-3">
 				{(products.id !== undefined) ? 
 					<ProductDetails>
 						<ProductDetails.thumbnail src={thumbnail} discount={products.discountPercentage}>
 							{products?.images.map((item, i) => {
+								console.log(item)
 								return (
 									<div key={i} 
 										onClick={(e) => changeThumbnail(e)} 
