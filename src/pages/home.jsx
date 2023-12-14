@@ -20,6 +20,7 @@ export default function Home(){
     const [ isCategoryExist, setIsCategoryExist ] = useState(false)
     const [ showData, setShowData ] = useState({perPage: 20, currentPage: 1})
     const [ productsTotalLength, setProductsTotalLength ] = useState(100)
+    const [ loading, setLoading ] = useState(false)
 
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keywordParams = searchParams.get('q') || null
@@ -32,6 +33,7 @@ export default function Home(){
     async function getProducts(data){
       const response = await data
       setProductsData(response.products)
+      setLoading(false)
     }
 
     function checkIsCategoryExist(category){
@@ -42,17 +44,23 @@ export default function Home(){
 
     function searchProduct(){
         setProductsData([]) // for make skeleton loading
+        setLoading(true) // for make skeleton loading
+
+        let isProductFound = false
 
         setSearchParams(prev => {
           prev.set('page', 1) // set currentPage to 1
           return prev
         }, {replace: true})
 
-        if(categoryParams !== 'all' && isCategoryExist){
-          const filteredProductsData = productsData.filter(item => item.title.toLowerCase().includes(keywordParams?.toLowerCase()) || item.brand.toLowerCase().includes(keywordParams?.toLowerCase()))
 
+        if(categoryParams !== 'all'){
+            const filteredProductsData = productsData.filter(item => item.title.toLowerCase().includes(keywordParams?.toLowerCase()) || item.brand.toLowerCase().includes(keywordParams?.toLowerCase()))
+          console.log(1)
           setProductsData(filteredProductsData)
+          setLoading(false)
         }else{
+          console.log(2)
           getProducts(product.searchProduct(keywordParams))
           .catch((error) => {
             console.error(error)
@@ -69,13 +77,19 @@ export default function Home(){
 
     useEffect(()=>{
       if(keywordParams !== null){
-        searchProduct()
+          searchProduct()
       }
     }, [keywordParams])
 
     useEffect(()=>{
+
       if(checkIsCategoryExist(categoryParams)){
-        getProductByCategory(categoryParams)
+        if(keywordParams !== null){
+          getProductByCategory(categoryParams)
+          searchProduct()
+        }else{
+          getProductByCategory(categoryParams)
+        }
       }
     },[categories])
 
@@ -107,7 +121,7 @@ export default function Home(){
         setTimeout(()=> location.reload(), 2500)
       }) 
 
-      // check if url contain search keyword ath the first page loaded
+      // check if url contain search keyword at the first page loaded
       if(keywordParams !== null){
         searchProduct()
       }
@@ -115,17 +129,43 @@ export default function Home(){
     },[])
 
     useEffect(()=> {
-      if(categoryParams !== 'all'){
-        const pages = Math.round(productsData.length / showData.perPage) || 1
 
-        if (Number(currentPageParams) > pages || Number(currentPageParams) < pages)
+      if(productsData.length <= 0 && !loading && keywordParams !== null){
+        setError({
+          isError: true,
+          message: `Product with keyword '${keywordParams}' is not found:(`,
+          img: 'product-not-found.svg'
+        })
+      }else{
+        setError({isError: false})
+      }
+
+      if(categoryParams !== 'all'){
+        const pages = Math.round(productsData.length / showData.perPage)
+
+
+        const isCurrentPageExist = (Number(currentPageParams) >= pages && Number(currentPageParams) <= pages) ? false : true
+
+        if (!isCurrentPageExist){
           setError({
             isError: true,
-            message: `Page number ${currentPageParams} in category "${categoryParams?.split('-').join(' ')}" is not found!`,
+            message: `Page number ${currentPageParams} in category "${categoryParams?.split('-').join(' ')}" is not exist!`,
           })
-        }else{
-          setError({ isError: false})
         }
+      }else{ // if current category is 'all'
+        const pages = Math.round(productsTotalLength / showData.perPage)
+
+
+        const isCurrentPageExist = (Number(currentPageParams) >= pages && Number(currentPageParams) <= pages) ? false : true
+
+        if (!isCurrentPageExist){
+          setError({
+            isError: true,
+            message: `Page number ${currentPageParams} in category "${categoryParams?.split('-').join(' ')}" is not exist!`,
+          })
+          setError({ isError: false, message: ''})
+        }
+      }
     }, [productsData])
 
     useEffect(()=> {
@@ -139,6 +179,7 @@ export default function Home(){
 
       if(checkIsCategoryExist(category)&& category !== 'all'){
         setProductsData([]) //  for making skeleton loading
+        setLoading(true) //  for making skeleton loading
         getProducts(product.getProductByCategory(category))
         .catch((error) => {
           console.error(error)
@@ -155,6 +196,7 @@ export default function Home(){
         const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
 
         setProductsData([]) //  for making skeleton loading
+        setLoading(true) //  for making skeleton loading
         getProducts(product.getAllProducts(showData.perPage, skip))
         .catch(error => {
           console.error(error)
@@ -191,6 +233,7 @@ export default function Home(){
       }else{
         const skip = (Number(showData.perPage) * Number(currentPageParams)) - Number(showData.perPage)
         setProductsData([]) //  for making skeleton loading
+        setLoading(true) //  for making skeleton loading
         getProducts(product.getAllProducts(showData.perPage, skip))
         .catch((error) => {
           console.error(error)
@@ -257,16 +300,7 @@ export default function Home(){
           )
         })
 
-        const isProductFound = productsData.find(item => item.title.toLowerCase().includes(keywordParams?.toLowerCase()) || item.brand.toLowerCase().includes(keywordParams?.toLowerCase())) ?? false
 
-
-        if(!isProductFound && cards.length <= 0){
-          setError({
-            isError: true,
-            message: `Product '${keywordParams}' is not found, please input keywordParams correctly`,
-            img: 'product-not-found.svg'
-          })
-        }
 
         return cards
     }
@@ -318,9 +352,9 @@ export default function Home(){
             <h2 
               className="font-semibold font-montserrat capitalize text-indigo-900"
             >
-              {keywordParams !== null && selectedCategory !== null ?
+              {keywordParams !== null && categoryParams !== null ?
                 <span>
-                  result for <span className="font-bold">{keywordParams}</span> in <span className="font-bold">'{selectedCategory?.split('-').join(' ')}'</span> category
+                  result for <span className="font-bold normal-case">{keywordParams}</span> in <span className="font-bold">'{categoryParams?.split('-').join(' ')}'</span> category
                 </span>
                 : <span> 
                     our <span className="font-bold">{(isCategoryExist && categoryParams !== 'all') ? categoryParams?.split('-').join(' ') : null}</span> products
@@ -365,7 +399,7 @@ export default function Home(){
         <div className="grid min-h-screen container mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
 
 
-            {productsData?.length > 0 
+            {productsData?.length > 0 && !loading 
                ? displayProductCards()
                : <Skeleton number="8" style="h-[300px] rounded-md"/>
             }

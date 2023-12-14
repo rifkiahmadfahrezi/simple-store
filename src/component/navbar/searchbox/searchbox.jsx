@@ -1,24 +1,29 @@
-import React, { useState} from 'react'
+import React, {useState} from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 export default function Searchbox({setErrorState = undefined}){
 
 	const [searchParams, setSearchParams] = useSearchParams({q: ''})
-	const [ keywordValue, setKeywordValue ] = useState('')
-	const keyword = searchParams.get('q') ?? false
+	const keywordParams = searchParams.get('q') || null
+
+	const [ keyword, setKeyword ] = useState(searchParams.get('q')|| null)
+
 
 	function searchInputChangeHandler(e){
 		const value = e.target.value
-		setKeywordValue(value)
 
+		setKeyword(value?.toLowerCase())
 	}
 
 	function searchSubmitHandler(e){
       e.preventDefault()
 
+      window.scrollTo(0,0)
+
       if (setErrorState !== undefined) setErrorState({isError: false,message: '', img: null})
+	  
 	  setSearchParams(prev => {
-      prev.set('q', keywordValue.toLowerCase())
+      prev.set('q', keyword?.toLowerCase())
 	  	return prev
 	  }, {replace: true})
 
@@ -30,7 +35,7 @@ export default function Searchbox({setErrorState = undefined}){
       // check if currect page is not the homePage
       if(currentPageName !== ''){
       	// redirect user to get result of the search ath the home page
-	      	window.location.href = `${originUrl}/?q=${keyword.toLowerCase()}&category=all`
+	      	window.location.href = `${originUrl}/?q=${keywordParams.toLowerCase()}&category=all`
       }
 
       // if current url is homepage but have url params
@@ -41,7 +46,7 @@ export default function Searchbox({setErrorState = undefined}){
       	// and if the current url != to origin url
 	      if (curentUrl !== originUrl) {
 	      	// redirect user to get result of the search ath the home page
-	      	window.location.href = `${originUrl}/?q=${keyword.toLowerCase()}&category=all`
+	      	window.location.href = `${originUrl}/?q=${keywordParams.toLowerCase()}&category=all`
 	      }
       }
 
@@ -54,7 +59,7 @@ export default function Searchbox({setErrorState = undefined}){
 	        <input 
 	          	type="search" 
 	        	className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none focus:border-indigo-900 focus:ring focus:ring-indigo-200"
-	        	defaultValue={!keyword ? '' : keyword}
+	        	defaultValue={keywordParams === null ? '' : keywordParams}
 	        	onChange={(e) => searchInputChangeHandler(e)} 
 				id="searchbox" 
 	          	placeholder="Search some products..."/>
