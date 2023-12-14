@@ -145,15 +145,15 @@ export default function Home(){
     }, [searchResult])
 
     useEffect(()=> {
-      // if(productsData.length <= 0 && !loading && keywordParams !== null){
-      //   setError({
-      //     isError: true,
-      //     message: `Product with keyword '${keywordParams}' is not found:(`,
-      //     img: 'product-not-found.svg'
-      //   })
-      // }else{
-      //   setError({isError: false})
-      // }
+      if(productsData.length <= 0 && !loading && keywordParams !== null){
+        setError({
+          isError: true,
+          message: `Product with keyword '${keywordParams}' is not found:(`,
+          img: 'product-not-found.svg'
+        })
+      }else{
+        setError({isError: false})
+      }
 
       if(categoryParams !== 'all'){
         const pages = Math.round(productsData.length / showData.perPage) || 1
