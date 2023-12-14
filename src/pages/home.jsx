@@ -21,6 +21,7 @@ export default function Home(){
     const [ showData, setShowData ] = useState({perPage: 20, currentPage: 1})
     const [ productsTotalLength, setProductsTotalLength ] = useState(100)
     const [ loading, setLoading ] = useState(false)
+    const [ searchResult, setSearchResult ] = useState([])
 
     const [searchParams, setSearchParams] = useSearchParams({q:''})
     const keywordParams = searchParams.get('q') || null
@@ -32,8 +33,16 @@ export default function Home(){
 
     async function getProducts(data){
       const response = await data
+
       setProductsData(response.products)
-      setLoading(false)
+      if(keywordParams !== null && categoryParams !== 'all'){
+        const filteredProductsData = response.products.filter(item =>{
+        if(item.category === categoryParams)
+          return item.title.toLowerCase().includes(keywordParams?.toLowerCase()) || item.brand.toLowerCase().includes(keywordParams?.toLowerCase())
+        })
+        setSearchResult(filteredProductsData)
+      }
+      setLoading(false) // remove skeleton loading animation
     }
 
     function checkIsCategoryExist(category){
@@ -46,32 +55,21 @@ export default function Home(){
         setProductsData([]) // for make skeleton loading
         setLoading(true) // for make skeleton loading
 
-        let isProductFound = false
-
         setSearchParams(prev => {
           prev.set('page', 1) // set currentPage to 1
           return prev
         }, {replace: true})
 
-
-        if(categoryParams !== 'all'){
-            const filteredProductsData = productsData.filter(item => item.title.toLowerCase().includes(keywordParams?.toLowerCase()) || item.brand.toLowerCase().includes(keywordParams?.toLowerCase()))
-          console.log(1)
-          setProductsData(filteredProductsData)
-          setLoading(false)
-        }else{
-          console.log(2)
-          getProducts(product.searchProduct(keywordParams))
-          .catch((error) => {
-            console.error(error)
-            Swal.fire({
-              title: 'Someting went wrong :(',
-              text: 'Fail to get products data from server, please wait!',
-              timer: 2500,
-              timerProgressBar: true,
-            })
-           })
-        }
+        getProducts(product.searchProduct(keywordParams))
+        .catch((error) => {
+          console.error(error)
+          Swal.fire({
+            title: 'Someting went wrong :(',
+            text: 'Fail to get products data from server, please wait!',
+            timer: 2500,
+            timerProgressBar: true,
+          })
+          })
 
     }
 
@@ -90,6 +88,11 @@ export default function Home(){
         }else{
           getProductByCategory(categoryParams)
         }
+      }else{
+        setError({
+          isError: true,
+          message: `Category '${categoryParams}' is not exist, please select the correct category!`
+        })
       }
     },[categories])
 
@@ -121,16 +124,16 @@ export default function Home(){
         setTimeout(()=> location.reload(), 2500)
       }) 
 
-      // check if url contain search keyword at the first page loaded
-      if(keywordParams !== null){
-        searchProduct()
-      }
+      // // check if url contain search keyword at the first page loaded
+      // if(keywordParams !== null){
+      //   searchProduct()
+      // }
 
     },[])
 
-    useEffect(()=> {
+    useEffect(() => {
 
-      if(productsData.length <= 0 && !loading && keywordParams !== null){
+      if(searchResult.length <= 0 && !loading && keywordParams !== null){
         setError({
           isError: true,
           message: `Product with keyword '${keywordParams}' is not found:(`,
@@ -139,12 +142,23 @@ export default function Home(){
       }else{
         setError({isError: false})
       }
+    }, [searchResult])
+
+    useEffect(()=> {
+      // if(productsData.length <= 0 && !loading && keywordParams !== null){
+      //   setError({
+      //     isError: true,
+      //     message: `Product with keyword '${keywordParams}' is not found:(`,
+      //     img: 'product-not-found.svg'
+      //   })
+      // }else{
+      //   setError({isError: false})
+      // }
 
       if(categoryParams !== 'all'){
-        const pages = Math.round(productsData.length / showData.perPage)
-
-
-        const isCurrentPageExist = (Number(currentPageParams) >= pages && Number(currentPageParams) <= pages) ? false : true
+        const pages = Math.round(productsData.length / showData.perPage) || 1
+  
+        const isCurrentPageExist = (Number(currentPageParams) >= pages && Number(currentPageParams) <= pages) ? true : false
 
         if (!isCurrentPageExist){
           setError({
@@ -269,9 +283,18 @@ export default function Home(){
 
     }
 
+    function productInCategory(){
+      if(keywordParams !== null && categoryParams !== 'all'){
+        return searchResult
+      }else{
+        return productsData
+      }
+    //  return (keywordParams !== null && categoryParams !== 'all' || selectedCategory !== null)? searchResult : productsData
+    }
+
     function displayProductCards(){
 
-      const cards = productsData.map((item, index, arr) => {
+      const cards = productInCategory().map((item, index, arr) => {
           return (
             <Card 
               key={item.id} 
@@ -347,8 +370,8 @@ export default function Home(){
       <>
         <Navbar setErrorState={setError}/>
 
-        <div className="container mx-auto mt-5 z-[1] container mx-auto w-[90%] sm:w-full">
-          <div className="flex items-center gap-2 justify-between">
+        <div className="container mx-auto mt-5 z-[1] container mx-auto px-2 w-[90%] sm:w-full">
+          <div className="flex  flex-wrap items-center gap-2 justify-between">
             <h2 
               className="font-semibold font-montserrat capitalize text-indigo-900"
             >
@@ -396,10 +419,10 @@ export default function Home(){
         }
 
         {!error.isError ?
-        <div className="grid min-h-screen container mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid min-h-[100dvh] container px-2 mx-auto w-[90%] sm:w-full mt-8 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
 
 
-            {productsData?.length > 0 && !loading 
+            {productsData?.length > 0 || searchResult.length > 0 && !loading 
                ? displayProductCards()
                : <Skeleton number="8" style="h-[300px] rounded-md"/>
             }
@@ -414,9 +437,8 @@ export default function Home(){
             <p className="text-[20px] font-montserrat text-indigo-900">{error.message}</p>
           </div>
         }
-
         <Pagination 
-          activePage={isNaN(Number(currentPageParams)) ? currentPageParams : 1}
+          activePage={!isNaN(Number(currentPageParams)) ? currentPageParams : 1}
           dataLength={(isCategoryExist && categoryParams !== 'all' || keywordParams !== null) ? productsData?.length : productsTotalLength}
           numberPageClickHandler={numberPageClickHandler} 
           nextPageClickHandler={nextPageClickHandler} 
