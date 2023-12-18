@@ -18,6 +18,6 @@ i make this website just for practice, so this app have a very simple feature
 `email: budi@simplestore.com`<br>
 `password: user12345`
 
-[live demo](https://simple-store.surge.sh)
+[live demo](https://mysimple-store.netlify.app/)
 
 
