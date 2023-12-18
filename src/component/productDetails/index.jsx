@@ -6,7 +6,7 @@ import { getDiscountedPrice } from '../../utils/tools.js'
 
 export default function ProductDetails({id = 1, children}){
 	return(
-		<div className="container flex-col md:flex-row mx-auto mx-auto w-[90%] sm:w-full mt-6 flex justify-between gap-[25px]">
+		<div className="container flex-col md:flex-row mx-auto w-[90%] sm:w-full mt-6 flex justify-between gap-[25px]">
 			{children}
 		</div>
 	)
