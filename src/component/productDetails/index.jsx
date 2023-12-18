@@ -1,5 +1,5 @@
 import React from 'react'
-import Link from '../elements/link/Link'
+// import Link from '../elements/link/Link'
 
 import { getDiscountedPrice } from '../../utils/tools.js'
 

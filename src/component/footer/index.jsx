@@ -1,5 +1,5 @@
 import React from 'react'
-import Link from '../elements/link/Link'
+import Link from '../elements/link/link'
 
 export default function Footer(){
 	return(
