@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect} from 'react'
+import React, { useState, useEffect} from 'react'
 import Card from '../component/Card'
-import Input from '../component/elements/input/input'
 import Label from '../component/elements/input/label'
 import userData from '../utils/user.js'
 

@@ -1,13 +1,13 @@
 import React, { useState, useEffect} from 'react'
 
-import { ShoppingCart, removeItem, doCheckOut } from  '../context/ShoppingCart'
+// import { ShoppingCart, removeItem, doCheckOut } from  '../context/ShoppingCart'
 
-import Modal from '../component/Modal'
+import Modal from '../component/modal'
 import Navbar from '../component/navbar'
 import Footer from '../component/footer'
 import Accordion from '../component/accordion'
 
-import { convertDollar, getDiscountedPrice } from '../utils/tools.js'
+import { convertDollar } from '../utils/tools.js'
 import cart from '../utils/cart.js'
 import {getUser} from '../utils/user.js'
 

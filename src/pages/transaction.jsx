@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useContext} from 'react'
 
-import { ShoppingCart, removeItem, doCheckOut } from  '../context/ShoppingCart'
+import { ShoppingCart, doCheckOut } from  '../context/ShoppingCart'
 
 import Modal from '../component/Modal'
 import Navbar from '../component/navbar'
 import Footer from '../component/footer'
 import Accordion from '../component/accordion'
 
-import { convertDollar, getDiscountedPrice } from '../utils/tools.js'
-import cart from '../utils/cart.js'
+import { convertDollar} from '../utils/tools.js'
+// import cart from '../utils/cart.js'
 import {getUser} from '../utils/user.js'
 
 // convert number to text

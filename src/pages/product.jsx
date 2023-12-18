@@ -1,12 +1,10 @@
-import React, {useState, useEffect, useContext} from 'react'
-import {useLoaderData, useParams, useRouteError} from 'react-router-dom'
+import React, {useState, useContext} from 'react'
+import {useLoaderData, useParams} from 'react-router-dom'
 import Navbar from '../component/navbar'
-import Card from '../component/card'
 import Footer from '../component/footer'
-import ProductDetails from '../component/ProductDetails'
+import ProductDetails from '../component/productDetails'
 import product from '../utils/data.js'
-import cart from '../utils/cart.js'
-import { ShoppingCart, addNewItem, decreaseItem,removeItem } from  '../context/ShoppingCart'
+import { ShoppingCart, addNewItem } from  '../context/ShoppingCart'
 
 
 
