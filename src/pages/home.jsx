@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useContext} from 'react'
-import {useLoaderData, useSearchParams} from 'react-router-dom'
+import {useSearchParams} from 'react-router-dom'
 import Navbar from '../component/navbar'
 import Card from '../component/card'
 import Footer from '../component/footer'
@@ -7,7 +7,7 @@ import product from '../utils/data.js'
 import Dropdown from '../component/dropdown'
 import Skeleton from '../component/skeleton'
 import Pagination from '../component/pagination'
-import cart from '../utils/cart.js'
+// import cart from '../utils/cart.js'
 import { getDiscountedPrice } from '../utils/tools.js'
 import { ShoppingCart, addNewItem, decreaseItem,removeItem } from  '../context/ShoppingCart'
 
@@ -370,7 +370,7 @@ export default function Home(){
       <>
         <Navbar setErrorState={setError}/>
 
-        <div className="container mx-auto mt-5 z-[1] container mx-auto px-2 w-[90%] sm:w-full">
+        <div className="mx-auto mt-5 z-[1] container px-2 w-[90%] sm:w-full">
           <div className="flex  flex-wrap items-center gap-2 justify-between">
             <h2 
               className="font-semibold font-montserrat capitalize text-indigo-900"
