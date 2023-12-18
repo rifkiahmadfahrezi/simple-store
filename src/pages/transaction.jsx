@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext} from 'react'
 
 import { ShoppingCart, doCheckOut } from  '../context/ShoppingCart'
 
-import Modal from '../component/Modal'
 import Navbar from '../component/navbar'
 import Footer from '../component/footer'
 import Accordion from '../component/accordion'
@@ -21,7 +20,7 @@ export default function Transaction(){
 	// json.parse for change string to boolean
 	const [ isLogin, setIsLogin] = useState(JSON.parse(sessionStorage.getItem('login')) ?? false)
 	const [ userInfo, setUserInfo ] = useState({})
-    const [ modal, setModal ] = useState({isActive: false, target: null})
+    // const [ modal, setModal ] = useState({isActive: false, target: null})
     const[ isOpen, setIsOpen ] = useState(false) // for accordion
 
 	const userId = sessionStorage.getItem('userId')
