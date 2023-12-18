@@ -6,7 +6,7 @@ import Searchbox from './searchbox/searchbox'
 import Dropdown from '../dropdown'
 import {getUser} from '../../utils/user.js'
 import cart from '../../utils/cart.js'
-import Modal from '../Modal'
+import Modal from '../modal'
 import { convertDollar } from '../../utils/tools.js'
 // convert number to text
 import numberToText from 'number-to-text'
